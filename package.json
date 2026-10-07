@@ -1,0 +1,15 @@
+{
+  "name": "pmc-practiconecta",
+  "version": "0.2.0",
+  "description": "Prototipo PMC: marketplace universitario de servicios supervisados",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

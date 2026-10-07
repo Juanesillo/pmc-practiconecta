@@ -182,3 +182,11 @@ textarea { resize: vertical; margin-top: .4rem; }
   .nav-footer { flex-direction: column-reverse; align-items: stretch; }
   .nav-right { justify-content: space-between; }
 }
+
+.user-switch { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted); }
+.user-switch select { width: auto; padding: .3rem .5rem; font-size: .88rem; }
+.empty-state { text-align: center; padding: 2rem 1rem; }
+.empty-state .btn { margin-top: .6rem; }
+.toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted); margin-top: .7rem; }
+.toggle input { width: auto; }
+@media (max-width: 760px) { .topbar-actions { flex-wrap: wrap; } }
