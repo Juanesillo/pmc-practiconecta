@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PractiConecta · Prototipo</title>
+  <meta name="description" content="Prototipo del marketplace universitario de servicios supervisados (PMC).">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">P</span>
+      <div>
+        <strong>PractiConecta</strong>
+        <small>Servicios universitarios supervisados · Prototipo</small>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="sim-pill" title="Todo en este prototipo es simulado">Modo simulación</span>
+      <button class="btn ghost" id="btn-reset" type="button">Reiniciar demo</button>
+    </div>
+  </header>
+
+  <nav class="stepper" id="stepper" aria-label="Flujo principal"></nav>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <footer class="footer">
+    Prototipo académico (PMC). Los datos, personas, pagos y verificaciones son ficticios; no se mueve dinero real.
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
