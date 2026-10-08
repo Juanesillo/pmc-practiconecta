@@ -1,14 +1,26 @@
 // Render principal, cabecera, notificaciones y delegación de eventos.
 
+function navItems() {
+  const r = role();
+  const pending = orders.filter(o => isOpen(o)).length;
+  if (r === 'cliente') return [['explorar', 'Explorar', 'compass', 0], ['casos', 'Mis casos', 'inbox', pending]];
+  if (r === 'estudiante') return [['perfil', 'Mi perfil', 'user', 0], ['casos', 'Solicitudes', 'inbox', pending]];
+  return [['perfil', 'Estudiantes', 'users', 0], ['casos', 'Casos', 'inbox', pending]];
+}
+
 function renderHeader() {
-  const bar = $('#topbar-user');
-  if (!D) { bar.innerHTML = ''; return; }
+  const nav = $('#mainnav'), bar = $('#topbar-user');
+  if (!D) { nav.innerHTML = ''; bar.innerHTML = ''; return; }
+  const cur = route().name === 'servicio' ? 'explorar' : route().name;
+  nav.innerHTML = navItems().map(([id, label, ic, n]) => `<a class="navlink ${cur === id ? 'active' : ''}" href="#/${id}">${icon(ic, 18)}<span>${label}</span>${n ? `<span class="nav-badge">${n}</span>` : ''}</a>`).join('');
+
   const unread = D.notifications.filter(n => !n.read).length;
   bar.innerHTML = `
+    ${D.demo ? `<button class="btn ghost sm" type="button" data-act="guide-open">${icon('book', 15)}<span class="hide-sm">Guía de demo</span></button>` : ''}
     <div class="menu-wrap">
       <button class="icon-btn" type="button" data-act="bell" aria-label="Notificaciones" aria-expanded="${ui.menu === 'bell'}">${icon('bell', 19)}${unread ? `<span class="dot-badge">${unread}</span>` : ''}</button>
       ${ui.menu === 'bell' ? `<div class="dropdown notif">
-        <div class="dd-head"><strong>Notificaciones</strong></div>
+        <div class="dd-head">Notificaciones</div>
         ${D.notifications.length ? D.notifications.map(n => `<button type="button" class="notif-item ${n.read ? '' : 'unread'}" data-act="notif" data-order="${n.orderId ?? ''}" data-kind="${n.kind}">
           <span>${esc(n.text)}</span><small>${esc(n.at)}</small></button>`).join('') : '<p class="note pad">Sin notificaciones todavía.</p>'}
       </div>` : ''}
@@ -24,24 +36,6 @@ function renderHeader() {
     </div>`;
 }
 
-function renderSidebar() {
-  const sb = $('#sidebar');
-  sb.hidden = !D;
-  if (!D) return;
-  $('#stepper').innerHTML = STEPS.map((s, i) => {
-    const cls = i === ui.step ? 'active' : i < ui.step ? 'done' : '';
-    return `<button type="button" class="step ${cls}" data-act="goto" data-step="${i}" ${i === ui.step ? 'aria-current="step"' : ''}>
-      <span class="step-n">${i < ui.step ? icon('check', 15) : i + 1}</span>
-      <span class="step-t"><span class="step-l">${s.label}</span><span class="step-s">${s.sub}</span></span></button>`;
-  }).join('');
-  const o = order();
-  $('#side-case').innerHTML = o ? `<div class="side-case"><small>Caso #${o.id}</small>
-      <strong>${esc(o.service.title)}</strong>
-      <div class="row"><span>${esc(otherParty(o))}</span></div>
-      <div class="row" style="margin-top:.5rem"><span class="badge ${orderStatus(o).tone}">${orderStatus(o).label}</span>${o.paid ? `<b>${fmt(o.amount)}</b>` : ''}</div></div>` : '';
-  $('#side-note').innerHTML = `${icon('info', 14)}<span>Prototipo académico: datos y pagos simulados.</span>`;
-}
-
 let pendingRender = false;
 
 function render() {
@@ -49,18 +43,20 @@ function render() {
   // No se redibuja mientras alguien escribe en un formulario largo: se hace al salir del campo.
   if (D && active?.closest?.('form[data-hold]')) { pendingRender = true; return; }
   const keep = active?.id === 'chat-input' ? { value: active.value, pos: active.selectionStart } : null;
+  const hadFocus = active?.matches?.('[data-change][data-key=q]') ? { pos: active.selectionStart } : null;
 
   document.body.classList.toggle('is-auth', !D);
   renderHeader();
-  renderSidebar();
-  if (!D) { $('#view').innerHTML = viewAuth(); return; }
-  $('#view').innerHTML = VIEWS[ui.step]();
+  $('#view').innerHTML = D ? viewRoute() : viewAuth();
+
   const body = $('#chat-body');
   if (body) body.scrollTop = body.scrollHeight;
   if (keep) {
     const el = $('#chat-input');
     if (el && !el.disabled) { el.value = keep.value; el.focus(); el.setSelectionRange(keep.pos, keep.pos); }
   }
+  const back = $('#back-cases');
+  if (back) { back.removeAttribute('style'); back.classList.add('mobile-only'); }
 }
 
 /* ---------- Eventos delegados ---------- */
@@ -99,23 +95,26 @@ document.addEventListener('focusout', () => {
   }, 0);
 });
 
+window.addEventListener('hashchange', () => {
+  ui.menu = null;
+  window.scrollTo({ top: 0 });
+  refresh(true); // trae lo necesario (p. ej. horarios) y dibuja
+});
+
 Object.assign(ACTIONS, {
-  bell: async () => {
+  bell: () => {
     ui.menu = ui.menu === 'bell' ? null : 'bell';
     render();
-    if (ui.menu === 'bell' && D.notifications.some(n => !n.read)) {
-      // Marca como leídas al abrir; se refleja al cerrar para que se vea cuáles eran nuevas.
-      api('/notifications/read', 'POST').catch(() => {});
-    }
+    if (ui.menu === 'bell' && D.notifications.some(n => !n.read)) api('/notifications/read', 'POST').catch(() => {});
   },
   'user-menu': () => { ui.menu = ui.menu === 'user' ? null : 'user'; render(); },
   notif: b => {
     const kind = b.dataset.kind, id = b.dataset.order ? +b.dataset.order : null;
-    if (id && orders.some(o => o.id === id)) ui.orderId = id;
     ui.menu = null;
-    const stepFor = { verif: 0, order: 2, msg: 2, rating: 4, payment: 5, dispute: 5 }[kind] ?? ui.step;
-    go(stepFor);
-    refresh(true);
+    const o = id ? orders.find(x => x.id === id) : null;
+    if (kind === 'verif' || !o) return navigate('perfil');
+    const tab = { msg: 'chat', rating: 'supervision', payment: 'pago', dispute: 'pago' }[kind] || nextTab(o);
+    navigate(`casos/${o.id}/${tab}`);
   }
 });
 

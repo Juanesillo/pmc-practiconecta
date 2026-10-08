@@ -40,27 +40,21 @@ function viewAuth() {
     </form>`;
 
   return `<div class="landing">
-    <section class="hero">
-      <div class="brand">
-        <span class="logo" aria-hidden="true">${icon('shield-check', 22)}</span>
-        <div><strong>PractiConecta</strong><small>Servicios universitarios supervisados</small></div>
-      </div>
+    <section class="intro">
+      <span class="brand"><span class="logo" aria-hidden="true">${icon('check', 18)}</span>PractiConecta</span>
       <div>
-        <h1>Práctica universitaria, <em>supervisada</em> y a tu alcance.</h1>
-        <p class="lead">Contrata a estudiantes verificados de Odontología, Derecho, Psicología e Ingeniería. Un docente supervisa cada servicio y tu pago queda retenido hasta el cierre.</p>
+        <h1>Servicios universitarios, supervisados por docentes.</h1>
+        <p class="lead">Contrata a estudiantes verificados de Odontología, Derecho, Psicología e Ingeniería a un precio justo. Tu pago queda retenido hasta que el servicio se cumple.</p>
       </div>
-      <ul class="hero-points">
-        <li><span class="tile">${icon('shield-check', 20)}</span><div><strong>Estudiantes verificados</strong><span>Identidad, matrícula y aval de un docente supervisor.</span></div></li>
-        <li><span class="tile">${icon('clipboard', 20)}</span><div><strong>Supervisión docente</strong><span>El docente valida cada práctica y firma el cierre.</span></div></li>
-        <li><span class="tile">${icon('lock', 20)}</span><div><strong>Pago retenido</strong><span>El dinero se libera solo cuando el servicio se cumple.</span></div></li>
+      <ul class="points">
+        <li>${icon('shield-check', 20)}<div><strong>Estudiantes verificados</strong><span>Identidad, matrícula y aval de un docente supervisor.</span></div></li>
+        <li>${icon('clipboard', 20)}<div><strong>Supervisión en cada servicio</strong><span>El docente valida la práctica y firma el cierre.</span></div></li>
+        <li>${icon('lock', 20)}<div><strong>Pago retenido</strong><span>El dinero se libera solo cuando confirmas el servicio.</span></div></li>
       </ul>
-      <div class="flow" aria-label="Cómo funciona">
-        ${STEPS.map((s, i) => `<span>${i ? '<b>→</b>' : ''}${esc(s.label)}</span>`).join('')}
-      </div>
     </section>
     <section class="access">
-      <div><h2>${authTab === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}</h2>
-        <p class="muted" style="margin:.3rem 0 0">${authTab === 'login' ? 'Ingresa para continuar con tus servicios.' : 'Es gratis y toma menos de un minuto.'}</p></div>
+      <div><h2>${authTab === 'login' ? 'Inicia sesión' : 'Crea tu cuenta'}</h2>
+        <p class="muted" style="margin:.25rem 0 0">${authTab === 'login' ? 'Accede para continuar con tus servicios.' : 'Es gratis y toma menos de un minuto.'}</p></div>
       <div class="tabs" role="tablist">
         <button type="button" class="${authTab === 'login' ? 'on' : ''}" data-act="auth-tab" data-tab="login">Iniciar sesión</button>
         <button type="button" class="${authTab === 'register' ? 'on' : ''}" data-act="auth-tab" data-tab="register">Crear cuenta</button>
@@ -77,7 +71,7 @@ Object.assign(ACTIONS, {
     try { await api('/auth/switch', 'POST', { userId: b.dataset.id }); await enter(); } catch (e) { toast(e.message); }
   },
   logout: async () => { await api('/auth/logout', 'POST').catch(() => {}); leave(); },
-  switch: async b => { await act(() => api('/auth/switch', 'POST', { userId: b.value })); ui.orderId = null; ui.menu = null; saveUi(); render(); toast('Ahora estás como ' + D.me.name); }
+  switch: async b => { await api('/auth/switch', 'POST', { userId: b.value }); ui.menu = null; await refresh(true); navigate(defaultRoute()); toast('Ahora estás como ' + D.me.name); }
 });
 
 Object.assign(FORMS, {
@@ -87,15 +81,15 @@ Object.assign(FORMS, {
   register: async f => {
     const body = { name: f.name.value, email: f.email.value, password: f.password.value, role: f.role.value };
     if (f.role.value === 'estudiante') Object.assign(body, { uni: f.uni.value, career: f.career.value, semester: +f.semester.value, supervisorId: f.supervisorId.value });
-    try { await api('/auth/register', 'POST', body); ui.step = 0; await enter(); toast('¡Cuenta creada!'); } catch (e) { toast(e.message); }
+    try { await api('/auth/register', 'POST', body); await enter(); toast('¡Cuenta creada!'); } catch (e) { toast(e.message); }
   }
 });
 
 // Entra a la app: carga datos y abre el canal en tiempo real.
 async function enter() {
-  Object.assign(ui, { step: 0, orderId: null, menu: null, editSvc: null });
+  Object.assign(ui, { menu: null, editSvc: null, pendingSlot: null });
   await refresh(true);
-  if (D) connectEvents();
+  if (D) { navigate(defaultRoute()); connectEvents(); }
 }
 
 function leave() {

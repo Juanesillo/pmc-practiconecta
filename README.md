@@ -21,7 +21,7 @@ El alcance sigue la matriz MoSCoW del tablero de Miro. Sigue fuera ("Not now"): 
 
 En la pantalla de acceso hay **acceso rápido** a cuentas de ejemplo (clientes, estudiantes y docentes); también puedes iniciar sesión normal con el correo de la cuenta y la contraseña `demo1234`. Dentro de la app, el menú de usuario permite **cambiar de cuenta** y **reiniciar la demo**.
 
-Guion sugerido para presentar (un solo navegador, cambiando de cuenta):
+Guion sugerido para presentar (también disponible dentro de la app, en el botón **Guía de demo**):
 
 1. **Laura Vega** (estudiante nueva): valida su perfil → **Psic. Elena Vargas** (docente) le da el aval → Laura publica un servicio.
 2. **Juan Pérez** (cliente): busca, contacta “Valoración y limpieza dental”, chatea y acepta las condiciones.
@@ -85,9 +85,9 @@ Para una demo pública sin acceso rápido, pon `DEMO=0`: entonces solo se entra 
 public/             frontend estático (HTML, CSS, JS sin build)
   js/core.js        estado, API, tiempo real
   js/auth.js        inicio de sesión y registro
-  js/views.js       los seis pasos, por rol
-  js/main.js        render, cabecera, barra lateral, notificaciones
-  fonts/            Manrope y Fraunces (SIL OFL), autoalojadas
+  js/views.js       vistas (Explorar, ficha, Casos, Perfil) por rol
+  js/main.js        navegación, cabecera, notificaciones
+  fonts/            Inter (SIL OFL), autoalojada
 server/app.js       API Express (auth, permisos, reglas del flujo)
 server/db.js        esquema SQLite (node:sqlite) y semilla
 server/seed.js      datos ficticios
@@ -96,9 +96,17 @@ deploy/             nginx.conf y pmc.service
 Dockerfile, docker-compose.yml
 ```
 
-## Diseño
+## Diseño y navegación
 
-Interfaz sin dependencias externas: tipografías autoalojadas (Manrope para texto y Fraunces para títulos), iconos SVG en línea, paleta verde bosque sobre papel cálido y diseño adaptable a móvil. Los iconos siguen el estilo de [Lucide](https://lucide.dev) (licencia ISC).
+Interfaz sobria y sin dependencias externas: tipografía Inter autoalojada, iconos SVG en línea (estilo [Lucide](https://lucide.dev), licencia ISC), un solo color de marca y diseño adaptable a móvil (con barra de pestañas inferior).
+
+La navegación es la de una aplicación real, con rutas por hash (el botón «atrás» funciona y las vistas se pueden enlazar):
+
+- **Cliente:** *Explorar* (filtros, listado y ficha de cada servicio) y *Mis casos*.
+- **Estudiante:** *Mi perfil* (verificación y publicación de servicios) y *Solicitudes*.
+- **Docente:** *Estudiantes* (aval) y *Casos* (supervisión y disputas).
+
+Cada caso muestra un seguimiento (contacto → acuerdo → cita y pago → supervisión → cierre → pago) y cuatro pestañas: conversación, agenda, supervisión y pago. El botón **Guía de demo** (arriba) lista el recorrido completo y cambia de cuenta con un clic.
 
 ## Seguridad (alcance del prototipo)
 

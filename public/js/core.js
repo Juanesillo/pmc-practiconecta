@@ -5,13 +5,13 @@ const UI_KEY = 'pmc-ui-v3';
 const ACTIONS = {};
 const FORMS = {};
 
-// Estado de la interfaz (por pestaña). Lo demás viene del servidor.
+// Estado de la interfaz (por pestaña). Lo demás viene del servidor; la ubicación vive en el hash de la URL.
 const ui = Object.assign({
-  step: 0, orderId: null,
-  filters: { category: 'all', maxPrice: 80000, mode: 'any', q: '' },
+  filters: { category: 'all', maxPrice: 80000, mode: 'any', q: '', sort: 'match' },
   draft: { value: 0, comment: '' },
-  editSvc: null
+  editSvc: null, pendingSlot: null
 }, (() => { try { return JSON.parse(sessionStorage.getItem(UI_KEY)) || {}; } catch (e) { return {}; } })());
+delete ui.step; delete ui.orderId;
 ui.menu = null; // menú abierto (no se guarda)
 
 
@@ -52,11 +52,22 @@ const ICONS = {
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/>',
   tooth: '<path d="M12 5.5c-1-1.2-2.4-1.8-4-1.5-2.4.5-3.5 2.7-3 5.2.4 2 1.2 3 1.5 5 .3 2 .6 4.3 2 4.8 1.2.4 1.6-1.3 2-3 .3-1.2.8-2 1.5-2s1.2.8 1.5 2c.4 1.7.8 3.4 2 3 1.4-.5 1.7-2.8 2-4.8.3-2 1.1-3 1.5-5 .5-2.5-.6-4.7-3-5.2-1.6-.3-3 .3-4 1.5Z"/>',
-  chevron: '<path d="m6 9 6 6 6-6"/>'
+  chevron: '<path d="m6 9 6 6 6-6"/>',
+  compass: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>'
 };
 const icon = (name, size = 18) => `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
 const catIcon = id => ({ salud: 'heart-pulse', legal: 'scale', psico: 'heart', ingenieria: 'hard-hat' }[id] || 'grid');
 const catLabel = id => CATEGORIES.find(c => c.id === id)?.label || '';
+
+/* Rutas por hash: #/explorar, #/servicio/:id, #/casos, #/casos/:id/:pestaña, #/perfil */
+function route() {
+  const [name = '', a, b] = location.hash.replace(/^#\/?/, '').split('/');
+  return { name, a, b };
+}
+const navigate = path => { location.hash = '#/' + path; };
 
 let D = null;          // bootstrap: me, services, notifications...
 let orders = [];       // órdenes visibles para el usuario
@@ -69,7 +80,7 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmt = n => '$' + Number(n).toLocaleString('es-CO');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const role = () => D?.me.role;
-const order = () => orders.find(o => o.id === ui.orderId) || orders[0] || null;
+const order = () => { const r = route(); return r.name === 'casos' && r.a ? orders.find(o => o.id === +r.a) || null : null; };
 const serviceById = id => D.services.find(s => s.id === id) || D.myServices?.find(s => s.id === id);
 
 function stars(n) {
@@ -108,6 +119,12 @@ async function act(fn, okMsg) {
   catch (e) { toast(e.message); await refresh(true); }
 }
 
+// Los horarios solo se piden cuando se está viendo la pestaña de agenda de un caso sin pago.
+async function ensureSlots() {
+  const r = route(), o = order();
+  if (r.name === 'casos' && r.b === 'agenda' && o && !o.paid) slots[o.serviceId] = await api(`/services/${o.serviceId}/slots`);
+}
+
 let lastSig = '';
 async function refresh(force = false) {
   if (!D && !force) return;
@@ -115,11 +132,9 @@ async function refresh(force = false) {
     const boot = await api('/bootstrap');
     const list = await api('/orders');
     D = boot; orders = list;
-    if (ui.orderId && !orders.some(o => o.id === ui.orderId)) ui.orderId = null;
-    const o = order();
-    if (ui.step === 3 && o && !o.paid) slots[o.serviceId] = await api(`/services/${o.serviceId}/slots`);
+    await ensureSlots();
   } catch (e) { return; } // sin servidor o sin sesión: se conserva la vista
-  const sig = JSON.stringify([D, orders, slots, ui.step, ui.orderId, ui.menu, ui.editSvc]);
+  const sig = JSON.stringify([D, orders, slots, location.hash, ui.menu, ui.editSvc, ui.pendingSlot]);
   if (force || sig !== lastSig) { lastSig = sig; render(); }
 }
 
@@ -150,7 +165,7 @@ function nextAction(o) {
   const r = role();
   const done = ['released', 'refunded'].includes(o.escrow);
   if (done) return o.escrow === 'released' ? '✔ Flujo completo: el pago fue liberado al estudiante.' : 'El pago fue reembolsado al cliente.';
-  if (o.escrow === 'dispute') return r === 'docente' ? 'Hay una disputa: resuélvela en el paso “Pago retenido”.' : 'Disputa abierta: el pago sigue retenido hasta que el docente la resuelva.';
+  if (o.escrow === 'dispute') return r === 'docente' ? 'Hay una disputa: resuélvela en la pestaña “Pago”.' : 'Disputa abierta: el pago sigue retenido hasta que el docente la resuelva.';
   if (!o.agreed) {
     const mine = r === 'cliente' ? o.acceptClient : o.acceptStudent;
     if (r === 'docente') return 'Las partes aún negocian las condiciones.';
@@ -162,4 +177,23 @@ function nextAction(o) {
   if (!mineRated) return 'Siguiente: califica la experiencia.';
   if (r === 'cliente') return 'Siguiente: confirma el servicio y libera el pago.';
   return 'Esperando que el cliente libere el pago.';
+}
+
+// Pestaña que más sentido tiene abrir según el estado del caso y el rol.
+function nextTab(o) {
+  const r = role();
+  if (!o.agreed) return 'chat';
+  if (!o.paid) return 'agenda';
+  if (o.escrow === 'dispute' || o.escrow === 'released' || o.escrow === 'refunded') return 'pago';
+  if (!o.serviceDone) return 'supervision';
+  const mineRated = r === 'cliente' ? o.ratingByClient : r === 'estudiante' ? o.ratingByStudent : true;
+  return mineRated ? 'pago' : 'supervision';
+}
+
+// Seguimiento del caso: cada etapa con su estado.
+function trackerStages(o) {
+  const done = [true, o.agreed, o.paid, o.supervision.some(Boolean), o.serviceDone, o.escrow === 'released' || o.escrow === 'refunded'];
+  const labels = ['Contacto', 'Acuerdo', 'Cita y pago', 'Supervisión', 'Cierre', o.escrow === 'refunded' ? 'Reembolso' : 'Pago'];
+  const now = done.indexOf(false);
+  return labels.map((label, i) => ({ label, state: done[i] ? 'done' : i === now ? 'now' : '' }));
 }
