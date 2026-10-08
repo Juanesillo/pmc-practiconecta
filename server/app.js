@@ -32,7 +32,8 @@ function createApp({ dbFile = ':memory:', demo = true } = {}) {
 
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', 'loopback');
+  // Detrás de Caddy/nginx (en el host o en Docker): se confía en proxies de red local para leer X-Forwarded-*.
+  app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
   /* ---------- Seguridad básica ---------- */
   app.use((req, res, next) => {

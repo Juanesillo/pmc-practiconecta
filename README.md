@@ -46,38 +46,36 @@ Variables: `PORT` (3000), `DB_PATH` (`server/data/pmc.db`), `DEMO` (`0` desactiv
 
 > Al cambiar la versión del esquema (SQLite) los datos de demo anteriores se descartan.
 
-## Desplegar en una VPS
+## Desplegar en una VPS (Docker + Caddy)
 
-**Opción A: Docker**
+La app corre en un contenedor que publica `172.17.0.1:8082` (solo accesible desde el servidor y otros contenedores), y Caddy le hace proxy y pone el HTTPS.
 
 ```bash
 git clone <URL-del-repo> && cd pmc-practiconecta
-docker compose up -d --build        # expone 127.0.0.1:3000, datos en un volumen
+docker compose up -d --build
 ```
 
-**Opción B: systemd (Node ≥ 22.13)**
+Después se añade a la configuración de Caddy el bloque de [`deploy/Caddyfile`](deploy/Caddyfile) (cambiando el dominio) y se recarga:
 
-```bash
-sudo git clone <URL-del-repo> /var/www/pmc
-cd /var/www/pmc && sudo npm install --omit=dev
-sudo mkdir -p server/data && sudo chown -R www-data:www-data server/data
-sudo cp deploy/pmc.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now pmc
+```
+pmc.TU-DOMINIO.dev {
+    encode zstd gzip
+    reverse_proxy 172.17.0.1:8082 {
+        flush_interval -1
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        X-Frame-Options DENY
+    }
+}
 ```
 
-**nginx como proxy (en ambos casos)**
+Los datos viven en el volumen `pmc-data`. Actualizar: `git pull && docker compose up -d --build`. Si el repo es privado, usa una *deploy key* de solo lectura.
 
-```bash
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/pmc
-sudo ln -s /etc/nginx/sites-available/pmc /etc/nginx/sites-enabled/pmc
-# editar server_name, luego:
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d tu-dominio    # HTTPS (la cookie de sesión se marca Secure automáticamente)
-```
+**Para una demo pública:** pon `DEMO: "0"` en `docker-compose.yml`. Así se desactiva el acceso rápido sin contraseña y el reinicio de demo. Ojo: las cuentas de ejemplo siguen existiendo con la contraseña `demo1234`; si el sitio queda abierto a cualquiera, cámbiala en `server/seed.js` (`DEMO_PASSWORD`) antes de desplegar.
 
-Actualizar: `git pull` y reiniciar (`docker compose up -d --build` o `sudo npm install --omit=dev && sudo systemctl restart pmc`). Si el repo es privado, usa una *deploy key* de solo lectura.
-
-Para una demo pública sin acceso rápido, pon `DEMO=0`: entonces solo se entra con correo y contraseña.
+**Sin Docker:** se puede usar `deploy/pmc.service` (systemd, Node ≥ 22.13) y apuntar Caddy a `127.0.0.1:3000`.
 
 ## Estructura
 
@@ -92,7 +90,7 @@ server/app.js       API Express (auth, permisos, reglas del flujo)
 server/db.js        esquema SQLite (node:sqlite) y semilla
 server/seed.js      datos ficticios
 test/api.test.js    pruebas de la API (node:test)
-deploy/             nginx.conf y pmc.service
+deploy/             Caddyfile y pmc.service
 Dockerfile, docker-compose.yml
 ```
 
