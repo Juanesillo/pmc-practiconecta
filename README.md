@@ -86,7 +86,8 @@ public/             frontend estático (HTML, CSS, JS sin build)
   js/core.js        estado, API, tiempo real
   js/auth.js        inicio de sesión y registro
   js/views.js       los seis pasos, por rol
-  js/main.js        render, cabecera, notificaciones
+  js/main.js        render, cabecera, barra lateral, notificaciones
+  fonts/            Manrope y Fraunces (SIL OFL), autoalojadas
 server/app.js       API Express (auth, permisos, reglas del flujo)
 server/db.js        esquema SQLite (node:sqlite) y semilla
 server/seed.js      datos ficticios
@@ -94,6 +95,10 @@ test/api.test.js    pruebas de la API (node:test)
 deploy/             nginx.conf y pmc.service
 Dockerfile, docker-compose.yml
 ```
+
+## Diseño
+
+Interfaz sin dependencias externas: tipografías autoalojadas (Manrope para texto y Fraunces para títulos), iconos SVG en línea, paleta verde bosque sobre papel cálido y diseño adaptable a móvil. Los iconos siguen el estilo de [Lucide](https://lucide.dev) (licencia ISC).
 
 ## Seguridad (alcance del prototipo)
 

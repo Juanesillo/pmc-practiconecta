@@ -3,26 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3b32">
   <title>PractiConecta · Prototipo</title>
-  <meta name="description" content="Prototipo del marketplace universitario de servicios supervisados (PMC).">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Ctext x='16' y='23' font-size='20' font-family='sans-serif' font-weight='800' text-anchor='middle' fill='white'%3EP%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="Marketplace universitario de servicios supervisados: estudiantes verificados, supervisión docente y pago retenido.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230f5c4d'/%3E%3Ctext x='16' y='23' font-size='20' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='white'%3EP%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="is-auth">
   <header class="topbar">
     <div class="brand">
-      <span class="logo" aria-hidden="true">P</span>
+      <span class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
       <div>
         <strong>PractiConecta</strong>
-        <small>Servicios universitarios supervisados · Prototipo</small>
+        <small>Servicios universitarios supervisados</small>
       </div>
     </div>
     <div class="topbar-actions" id="topbar-user"></div>
   </header>
 
-  <nav class="stepper" id="stepper" aria-label="Flujo principal" hidden></nav>
-
-  <main id="view" class="view" tabindex="-1"></main>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" hidden>
+      <nav class="stepper" id="stepper" aria-label="Flujo principal"></nav>
+      <div id="side-case"></div>
+      <p class="side-note" id="side-note"></p>
+    </aside>
+    <main id="view" class="view" tabindex="-1"></main>
+  </div>
 
   <footer class="footer">
     Prototipo académico (PMC). Los datos, personas, pagos y verificaciones son ficticios; no se mueve dinero real.

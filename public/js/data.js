@@ -1,19 +1,19 @@
 // Textos y catálogos de la interfaz. Los datos del negocio (servicios, órdenes, usuarios) vienen de la API.
 const STEPS = [
-  { id: 'perfil', label: 'Perfil verificado' },
-  { id: 'busqueda', label: 'Búsqueda y matching' },
-  { id: 'chat', label: 'Chat' },
-  { id: 'agenda', label: 'Agendamiento' },
-  { id: 'supervision', label: 'Supervisión y reputación' },
-  { id: 'pago', label: 'Pago retenido' }
+  { id: 'perfil', label: 'Perfil verificado', sub: 'Identidad y aval docente', icon: 'shield-check' },
+  { id: 'busqueda', label: 'Búsqueda y matching', sub: 'Encuentra el servicio ideal', icon: 'search' },
+  { id: 'chat', label: 'Chat', sub: 'Acuerden las condiciones', icon: 'message' },
+  { id: 'agenda', label: 'Agendamiento', sub: 'Elige fecha y paga seguro', icon: 'calendar' },
+  { id: 'supervision', label: 'Supervisión y reputación', sub: 'El docente valida, ambos califican', icon: 'clipboard' },
+  { id: 'pago', label: 'Pago retenido', sub: 'Custodia y liberación', icon: 'lock' }
 ];
 
 const CATEGORIES = [
-  { id: 'all', label: 'Todas' },
-  { id: 'salud', label: 'Salud (Odontología)' },
-  { id: 'legal', label: 'Derecho' },
-  { id: 'psico', label: 'Psicología' },
-  { id: 'ingenieria', label: 'Ingeniería' }
+  { id: 'all', label: 'Todas', icon: 'grid' },
+  { id: 'salud', label: 'Salud', icon: 'heart-pulse' },
+  { id: 'legal', label: 'Derecho', icon: 'scale' },
+  { id: 'psico', label: 'Psicología', icon: 'heart' },
+  { id: 'ingenieria', label: 'Ingeniería', icon: 'hard-hat' }
 ];
 
 const VERIFICATION_STEPS = [

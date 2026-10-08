@@ -40,7 +40,7 @@ function createApp({ dbFile = ':memory:', demo = true } = {}) {
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'same-origin',
-      'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+      'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'"
     });
     next();
   });
@@ -186,7 +186,7 @@ function createApp({ dbFile = ':memory:', demo = true } = {}) {
     res.json({
       demo,
       docentes: db.prepare("SELECT id, name, career, uni FROM users WHERE role = 'docente' ORDER BY name").all(),
-      demoAccounts: demo ? db.prepare(`SELECT id, name, role FROM users WHERE id IN (${[...S.CLIENTES, ...S.ESTUDIANTES, ...S.DOCENTES].map(() => '?').join(',')})
+      demoAccounts: demo ? db.prepare(`SELECT id, name, role, initials, color FROM users WHERE id IN (${[...S.CLIENTES, ...S.ESTUDIANTES, ...S.DOCENTES].map(() => '?').join(',')})
         ORDER BY CASE role WHEN 'cliente' THEN 0 WHEN 'estudiante' THEN 1 ELSE 2 END, name`).all(...[...S.CLIENTES, ...S.ESTUDIANTES, ...S.DOCENTES].map(u => u.id)) : [],
       demoPassword: demo ? S.DEMO_PASSWORD : undefined
     });
