@@ -8,5 +8,5 @@ COPY public ./public
 RUN mkdir -p /data && chown -R node:node /data
 USER node
 VOLUME /data
-EXPOSE 3000
+EXPOSE 8082
 CMD ["node", "server/index.js"]
