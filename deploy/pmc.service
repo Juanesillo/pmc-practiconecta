@@ -6,6 +6,8 @@ After=network.target
 Type=simple
 WorkingDirectory=/var/www/pmc
 Environment=PORT=3000
+Environment=TZ=America/Bogota
+Environment=DEMO=1
 ExecStart=/usr/bin/node server/index.js
 Restart=on-failure
 User=www-data

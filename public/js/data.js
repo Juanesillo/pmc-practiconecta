@@ -1,4 +1,13 @@
 // Textos y catálogos de la interfaz. Los datos del negocio (servicios, órdenes, usuarios) vienen de la API.
+const STEPS = [
+  { id: 'perfil', label: 'Perfil verificado' },
+  { id: 'busqueda', label: 'Búsqueda y matching' },
+  { id: 'chat', label: 'Chat' },
+  { id: 'agenda', label: 'Agendamiento' },
+  { id: 'supervision', label: 'Supervisión y reputación' },
+  { id: 'pago', label: 'Pago retenido' }
+];
+
 const CATEGORIES = [
   { id: 'all', label: 'Todas' },
   { id: 'salud', label: 'Salud (Odontología)' },
@@ -8,10 +17,10 @@ const CATEGORIES = [
 ];
 
 const VERIFICATION_STEPS = [
-  { id: 'email', title: 'Correo institucional', detail: 'camila.rojas@demo-norte.edu.co · confirmado por enlace' },
-  { id: 'enroll', title: 'Matrícula vigente', detail: 'Odontología · 9.º semestre · periodo 2026-2' },
-  { id: 'id', title: 'Identidad', detail: 'Documento y selfie cotejados (simulado)' },
-  { id: 'supervisor', title: 'Aval del docente supervisor', detail: 'Dra. Martha Gil aprueba el alcance de servicios' }
+  { title: 'Correo institucional', action: 'Confirmar correo', detail: 'Correo del dominio universitario confirmado por enlace (simulado)' },
+  { title: 'Matrícula vigente', action: 'Validar matrícula', detail: 'Matrícula del periodo actual validada (simulado)' },
+  { title: 'Identidad', action: 'Validar identidad', detail: 'Documento y selfie cotejados (simulado)' },
+  { title: 'Aval del docente supervisor', action: null, detail: 'El docente aprueba el alcance de los servicios' }
 ];
 
 const QUICK_REPLIES = [
@@ -26,4 +35,6 @@ const SUPERVISION_STEPS = [
   'El docente firma el cierre y valida la práctica'
 ];
 
-const VERIFIED_STUDENT_ID = 'u-camila'; // estudiante cuyo perfil se verifica en el paso 1
+const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // semana que empieza en lunes
+const ROLE_LABEL = { cliente: 'Cliente', estudiante: 'Estudiante', docente: 'Docente' };
