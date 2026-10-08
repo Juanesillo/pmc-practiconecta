@@ -1,4 +1,4 @@
-# PractiConecta · Prototipo (PMC)
+# UniServ · Prototipo (PMC)
 
 Marketplace universitario de servicios supervisados: estudiantes de Odontología, Derecho, Psicología e Ingeniería ofrecen servicios con supervisión docente, y los clientes los encuentran, contratan y pagan con el dinero retenido hasta el cierre.
 
@@ -51,7 +51,7 @@ Variables: `PORT` (3000), `DB_PATH` (`server/data/pmc.db`), `DEMO` (`0` desactiv
 La app corre en un contenedor que publica `172.17.0.1:8082` (solo accesible desde el servidor y otros contenedores), y Caddy le hace proxy y pone el HTTPS.
 
 ```bash
-git clone <URL-del-repo> && cd pmc-practiconecta
+git clone <URL-del-repo> && cd pmc-uniserv
 docker compose up -d --build
 ```
 

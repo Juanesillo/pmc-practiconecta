@@ -1,5 +1,5 @@
 [Unit]
-Description=PractiConecta (prototipo PMC)
+Description=UniServ (prototipo PMC)
 After=network.target
 
 [Service]

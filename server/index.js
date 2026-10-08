@@ -7,5 +7,5 @@ const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data', 'pmc.db');
 const demo = process.env.DEMO !== '0';
 
 createApp({ dbFile: DB_PATH, demo }).listen(PORT, () => {
-  console.log(`PractiConecta en http://localhost:${PORT} (demo ${demo ? 'activada' : 'desactivada'})`);
+  console.log(`UniServ en http://localhost:${PORT} (demo ${demo ? 'activada' : 'desactivada'})`);
 });

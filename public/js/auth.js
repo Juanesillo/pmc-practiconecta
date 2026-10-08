@@ -41,7 +41,7 @@ function viewAuth() {
 
   return `<div class="landing">
     <section class="intro">
-      <span class="brand"><span class="logo" aria-hidden="true">${icon('check', 18)}</span>PractiConecta</span>
+      <span class="brand"><img class="logo" src="logo.png" alt="" width="27" height="31">UniServ</span>
       <div>
         <h1>Servicios universitarios, supervisados por docentes.</h1>
         <p class="lead">Contrata a estudiantes verificados de Odontología, Derecho, Psicología e Ingeniería a un precio justo. Tu pago queda retenido hasta que el servicio se cumple.</p>

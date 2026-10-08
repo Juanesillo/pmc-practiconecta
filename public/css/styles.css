@@ -1,4 +1,4 @@
-/* PractiConecta · estilos. Sobrio: neutros, un color de marca, sin degradados. */
+/* UniServ · estilos. Sobrio: neutros, un color de marca, sin degradados. */
 @font-face { font-family: 'Inter'; src: url('../fonts/inter-latin.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
 
 :root {
@@ -65,7 +65,7 @@ code { background: var(--line-soft); padding: .05rem .35rem; border-radius: 5px;
 .topbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
 .topbar-in { max-width: 1180px; margin: 0 auto; height: 60px; padding: 0 1.5rem; display: flex; align-items: center; gap: 2rem; }
 .brand { display: flex; align-items: center; gap: .6rem; color: var(--ink); font-weight: 700; font-size: 1.02rem; letter-spacing: -.02em; text-decoration: none !important; }
-.logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; flex: none; }
+.logo { width: auto; height: 31px; flex: none; }
 .mainnav { display: flex; gap: .25rem; height: 100%; }
 .navlink { position: relative; display: flex; align-items: center; gap: .45rem; padding: 0 .85rem; color: var(--muted); font-weight: 600; font-size: .9rem; text-decoration: none !important; }
 .navlink:hover { color: var(--ink); }
