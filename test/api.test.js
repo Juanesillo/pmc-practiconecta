@@ -51,6 +51,14 @@ test('login con contraseña, rechazo de credenciales malas y registro', async ()
   assert.equal(bad.status, 400);
 });
 
+test('detrás de un proxy HTTPS la cookie de sesión se marca Secure', async () => {
+  const res = await fetch(base + '/api/auth/switch', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-Proto': 'https' }, body: JSON.stringify({ userId: 'u-client' })
+  });
+  assert.match(res.headers.get('set-cookie'), /;\s*Secure/i);
+  assert.match(res.headers.get('set-cookie'), /HttpOnly/i);
+});
+
 test('los orígenes externos no pueden modificar datos', async () => {
   const res = await fetch(base + '/api/auth/logout', { method: 'POST', headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(res.status, 403);

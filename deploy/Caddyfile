@@ -1,0 +1,15 @@
+# Bloque para añadir al Caddyfile del servidor (cambia el dominio).
+# Con Docker: la app publica 172.17.0.1:8082 (ver docker-compose.yml).
+# Sin Docker (systemd): usa 127.0.0.1:3000 si Caddy corre en el propio host.
+
+pmc.TU-DOMINIO.dev {
+    encode zstd gzip
+    reverse_proxy 172.17.0.1:8082 {
+        flush_interval -1    # el chat en tiempo real (SSE) no debe quedar en búfer
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        X-Frame-Options DENY
+    }
+}
