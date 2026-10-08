@@ -180,4 +180,4 @@ jobs:
             echo "- El despliegue falló y no fue posible aplicar rollback." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "- Deploy exitoso." >> "$GITHUB_STEP_SUMMARY"
-          fi%
+          fi
