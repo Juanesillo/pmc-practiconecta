@@ -1,5 +1,5 @@
 FROM node:24-alpine
-ENV NODE_ENV=production TZ=America/Bogota PORT=3000 DB_PATH=/data/pmc.db
+ENV NODE_ENV=production TZ=America/Bogota PORT=8082 DB_PATH=/data/pmc.db
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
