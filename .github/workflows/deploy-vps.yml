@@ -106,7 +106,7 @@ jobs:
 
           healthcheck() {
             health_failed=0
-            wait_service app 120 || health_failed=1
+            wait_service practiconecta-pmc-1 120 || health_failed=1
             return $health_failed
           }
 
