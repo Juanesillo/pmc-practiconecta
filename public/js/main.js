@@ -95,6 +95,9 @@ document.addEventListener('focusout', () => {
   }, 0);
 });
 
+// Al cerrar el diálogo de acceso se vacía, para no dejar contraseñas escritas en el DOM.
+document.addEventListener('close', e => { if (e.target.id === 'access') e.target.innerHTML = ''; }, true);
+
 window.addEventListener('hashchange', () => {
   ui.menu = null;
   window.scrollTo({ top: 0 });

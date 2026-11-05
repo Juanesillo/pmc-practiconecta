@@ -74,6 +74,15 @@ function affiliateHtml() {
     </div>`;
 }
 
+// El diálogo modal tapa el aviso (toast), así que los errores se muestran dentro del formulario.
+function formError(f, msg) {
+  const host = f.closest?.('dialog') ? f : $('#access form');
+  if (!host) return toast(msg);
+  let el = $('.form-error', host);
+  if (!el) { el = document.createElement('p'); el.className = 'form-error'; el.setAttribute('role', 'alert'); host.prepend(el); }
+  el.textContent = msg;
+}
+
 function openAccess(tab, role) {
   if (tab) authTab = tab;
   if (role) regRole = role;
@@ -208,7 +217,7 @@ Object.assign(ACTIONS, {
   'access-close': () => $('#access').close(),
   scroll: b => { $('#' + b.dataset.to)?.scrollIntoView({ behavior: 'smooth' }); },
   'demo-login': async b => {
-    try { await api('/auth/switch', 'POST', { userId: b.dataset.id }); await enter(); } catch (e) { toast(e.message); }
+    try { await api('/auth/switch', 'POST', { userId: b.dataset.id }); await enter(); } catch (e) { formError($('#access form') || b, e.message); }
   },
   logout: async () => { await api('/auth/logout', 'POST').catch(() => {}); leave(); },
   switch: async b => { await api('/auth/switch', 'POST', { userId: b.value }); ui.menu = null; await refresh(true); navigate(defaultRoute()); toast('Ahora estás como ' + D.me.name); }
@@ -217,12 +226,12 @@ Object.assign(ACTIONS, {
 Object.assign(FORMS, {
   affiliate: f => { $('#access').close(); toast('Solicitud enviada (prototipo). ¡Gracias, ' + f.name.value.split(' ')[0] + '!'); },
   login: async f => {
-    try { await api('/auth/login', 'POST', { email: f.email.value, password: f.password.value }); await enter(); } catch (e) { toast(e.message); }
+    try { await api('/auth/login', 'POST', { email: f.email.value, password: f.password.value }); await enter(); } catch (e) { formError(f, e.message); }
   },
   register: async f => {
     const body = { name: f.name.value, email: f.email.value, password: f.password.value, role: f.role.value };
     if (f.role.value === 'estudiante') Object.assign(body, { uni: f.uni.value, career: f.career.value, semester: +f.semester.value, supervisorId: f.supervisorId.value });
-    try { await api('/auth/register', 'POST', body); await enter(); toast('¡Cuenta creada!'); } catch (e) { toast(e.message); }
+    try { await api('/auth/register', 'POST', body); await enter(); toast('¡Cuenta creada!'); } catch (e) { formError(f, e.message); }
   }
 });
 
