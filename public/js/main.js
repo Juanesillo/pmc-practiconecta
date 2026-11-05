@@ -74,7 +74,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const el = e.target.closest('[data-change]');
   if (el && ACTIONS[el.dataset.change]) { ACTIONS[el.dataset.change](el); return; }
-  if (e.target.id === 'reg-role') $('#reg-student').hidden = e.target.value !== 'estudiante';
+  if (e.target.id === 'reg-role') { regRole = e.target.value; $('#reg-student').hidden = regRole !== 'estudiante'; }
 });
 
 document.addEventListener('input', e => {
