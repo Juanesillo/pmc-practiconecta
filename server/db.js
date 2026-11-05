@@ -116,4 +116,29 @@ function seedDemo(db) {
   S.SERVICES.forEach(s => svc.run(s.id, s.studentId, s.category, s.title, s.price, s.mode, s.zone, s.distance, s.scope, s.days, s.times, s.featured));
 }
 
-module.exports = { openDb, seedDemo, hashPassword, checkPassword };
+// Producción (DEMO=0): elimina los datos ficticios sembrados (por sus ids fijos) y conserva los registros reales.
+// Es idempotente: se ejecuta en cada arranque y no hace nada si ya no queda nada sembrado.
+function purgeSeed(db) {
+  const userIds = [...S.DOCENTES, ...S.CLIENTES, ...S.ESTUDIANTES].map(u => u.id);
+  const svcIds = S.SERVICES.map(s => s.id);
+  const um = userIds.map(() => '?').join(','), sm = svcIds.map(() => '?').join(',');
+  const orderIds = db.prepare(`SELECT id FROM orders WHERE client_id IN (${um}) OR service_id IN (${sm})
+    OR service_id IN (SELECT id FROM services WHERE student_id IN (${um}))`).all(...userIds, ...svcIds, ...userIds).map(o => o.id);
+  db.exec('BEGIN');
+  try {
+    for (const id of orderIds) {
+      db.prepare('DELETE FROM bookings WHERE order_id = ?').run(id);
+      db.prepare('DELETE FROM notifications WHERE order_id = ?').run(id);
+      db.prepare('DELETE FROM messages WHERE order_id = ?').run(id);
+      db.prepare('DELETE FROM orders WHERE id = ?').run(id);
+    }
+    db.prepare(`DELETE FROM bookings WHERE service_id IN (${sm})`).run(...svcIds);
+    db.prepare(`DELETE FROM services WHERE id IN (${sm}) OR student_id IN (${um})`).run(...svcIds, ...userIds);
+    // Estudiantes reales que tenían de supervisor a un docente de ejemplo quedan sin supervisor.
+    db.prepare(`UPDATE users SET supervisor_id = NULL WHERE supervisor_id IN (${um}) AND id NOT IN (${um})`).run(...userIds, ...userIds);
+    db.prepare(`DELETE FROM users WHERE id IN (${um})`).run(...userIds);
+    db.exec('COMMIT');
+  } catch (e) { db.exec('ROLLBACK'); throw e; }
+}
+
+module.exports = { openDb, seedDemo, purgeSeed, hashPassword, checkPassword };

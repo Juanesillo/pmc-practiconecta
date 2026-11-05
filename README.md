@@ -32,6 +32,18 @@ Guion sugerido para presentar (también disponible dentro de la app, en el botó
 
 Con dos navegadores (o uno normal y otro incógnito) puedes chatear entre cliente y estudiante en tiempo real.
 
+## Producción vs. demo
+
+| Variable | Valor | Efecto |
+|---|---|---|
+| `DEMO` | `0` (producción, por defecto en `docker-compose.yml` y `deploy/pmc.service`) | Sin cuentas de ejemplo, sin acceso rápido, sin "Guía de demo". Al arrancar **elimina los datos ficticios** sembrados (usuarios, servicios y casos de ejemplo) y conserva los registros reales. |
+| `DEMO` | `1` | Cuentas de ejemplo con acceso rápido (para presentar). |
+| `DOCENTE_CODE` | un secreto propio | Habilita el registro de docentes: quien conozca el código puede crear una cuenta de docente. Sin él, nadie puede registrarse como docente y los estudiantes no tendrán a quién elegir como supervisor. |
+
+En el servidor, define `DOCENTE_CODE` en el archivo `.env` junto a `docker-compose.yml` (o en `deploy/pmc.service` si usas systemd). Entrega el código solo a los docentes que quieras incorporar.
+
+> El pago retenido sigue siendo **simulado** (un estado en base de datos); la integración con Wompi está pendiente.
+
 ## Ejecutar en local
 
 Requiere **Node.js ≥ 22.13** (usa `node:sqlite`, sin compilar nada).

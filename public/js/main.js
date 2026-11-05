@@ -74,7 +74,13 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const el = e.target.closest('[data-change]');
   if (el && ACTIONS[el.dataset.change]) { ACTIONS[el.dataset.change](el); return; }
-  if (e.target.id === 'reg-role') { regRole = e.target.value; $('#reg-student').hidden = regRole !== 'estudiante'; }
+  if (e.target.id === 'reg-role') {
+    regRole = e.target.value;
+    $('#reg-extra').hidden = regRole === 'cliente';
+    $('#reg-student').hidden = regRole !== 'estudiante';
+    $('#reg-code').hidden = regRole !== 'docente';
+    $('[data-role-label]').textContent = regRole === 'docente' ? 'Programa o facultad' : 'Carrera';
+  }
 });
 
 document.addEventListener('input', e => {
@@ -125,6 +131,9 @@ Object.assign(ACTIONS, {
 
 (async function boot() {
   try { info = await fetch('/api/public/info').then(r => r.json()); } catch (e) { /* sin red */ }
+  const ft = $('#footer-text');
+  if (ft && info.demo) ft.textContent = 'Prototipo académico (PMC) · los datos, personas, pagos y verificaciones son ficticios; no se mueve dinero real.';
+  else if (ft) ft.textContent = '© UniServ · El pago retenido funciona en modo simulado mientras se integra Wompi.';
   await refresh(true);
   if (D) connectEvents(); else render();
 })();

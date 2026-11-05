@@ -30,13 +30,18 @@ function accessHtml() {
         <select name="role" id="reg-role">
           <option value="cliente" ${regRole === 'cliente' ? 'selected' : ''}>Contratar servicios (cliente)</option>
           <option value="estudiante" ${regRole === 'estudiante' ? 'selected' : ''}>Ofrecer servicios (estudiante)</option>
+          ${info.docenteSignup ? `<option value="docente" ${regRole === 'docente' ? 'selected' : ''}>Supervisar estudiantes (docente)</option>` : ''}
         </select></label>
-      <div id="reg-student" class="auth-form" ${regRole === 'estudiante' ? '' : 'hidden'}>
-        <label>Universidad<input name="uni" maxlength="60" placeholder="Universidad Demo"></label>
-        <label>Carrera<input name="career" maxlength="60" placeholder="Odontología, Derecho…"></label>
-        <label>Semestre<input name="semester" type="number" min="1" max="14" value="8"></label>
-        <label>Docente supervisor
-          <select name="supervisorId">${info.docentes.map(d => `<option value="${esc(d.id)}">${esc(d.name)} · ${esc(d.career)}</option>`).join('')}</select></label>
+      <div id="reg-extra" class="auth-form" ${regRole === 'cliente' ? 'hidden' : ''}>
+        <label>Universidad<input name="uni" maxlength="60" autocomplete="organization" ${info.demo ? 'placeholder="Universidad Demo"' : ''}></label>
+        <label><span data-role-label>${regRole === 'docente' ? 'Programa o facultad' : 'Carrera'}</span><input name="career" maxlength="60" placeholder="Odontología, Derecho…"></label>
+        <div id="reg-student" class="auth-form" ${regRole === 'estudiante' ? '' : 'hidden'}>
+          <label>Semestre<input name="semester" type="number" min="1" max="14" value="8"></label>
+          <label>Docente supervisor
+            ${info.docentes.length ? `<select name="supervisorId">${info.docentes.map(d => `<option value="${esc(d.id)}">${esc(d.name)} · ${esc(d.career)}${d.uni ? ' · ' + esc(d.uni) : ''}</option>`).join('')}</select>`
+              : `<select name="supervisorId" disabled><option value="">Aún no hay docentes registrados</option></select>`}</label>
+        </div>
+        <label id="reg-code" ${regRole === 'docente' ? '' : 'hidden'}>Código de invitación<input name="inviteCode" type="password" autocomplete="off"></label>
       </div>
       <button class="btn primary block" type="submit">Crear cuenta ${icon('arrow-right', 16)}</button>
     </form>`;
@@ -83,12 +88,20 @@ function formError(f, msg) {
   el.textContent = msg;
 }
 
-function openAccess(tab, role) {
+// Trae la lista de docentes al abrir el diálogo: puede haber cambiado desde que se cargó la página.
+async function refreshInfo() {
+  try { info = await fetch('/api/public/info').then(r => r.json()); } catch (e) { /* se usa lo ya cargado */ }
+}
+
+async function openAccess(tab, role) {
   if (tab) authTab = tab;
   if (role) regRole = role;
   const d = $('#access');
   d.innerHTML = accessHtml();
   if (!d.open) d.showModal();
+  const before = info.docentes.length;
+  await refreshInfo();
+  if (d.open && info.docentes.length !== before) d.innerHTML = accessHtml();
 }
 
 function viewAuth() {
@@ -158,7 +171,7 @@ function viewAuth() {
           <li class="now"><span>3</span>Servicio supervisado por el docente</li>
           <li><span>4</span>Confirmas y se libera el pago</li>
         </ol>
-        <small class="hc-note">Ilustración del prototipo; no se mueve dinero real.</small>
+        <small class="hc-note">Ejemplo ilustrativo del flujo.</small>
       </aside>
     </div></section>
 
@@ -194,7 +207,7 @@ function viewAuth() {
     </div></section>
 
     <section class="final"><div class="wrap final-in">
-      <div><h2>Listo para empezar con confianza</h2><p>Crea tu cuenta gratis o explora la demo con perfiles de ejemplo.</p></div>
+      <div><h2>Listo para empezar con confianza</h2><p>${info.demo ? 'Crea tu cuenta gratis o explora la demo con perfiles de ejemplo.' : 'Crea tu cuenta gratis y empieza hoy.'}</p></div>
       <div class="final-btns">
         <button class="btn light" type="button" data-act="cta-client">Crear cuenta</button>
         <button class="btn outline-light" type="button" data-act="open-login">Iniciar sesión</button>
@@ -203,13 +216,13 @@ function viewAuth() {
 
     <footer class="site-foot"><div class="wrap">
       <span class="brand"><img class="logo" src="logo.png" alt="" width="27" height="31">UniServ</span>
-      <small>Prototipo académico (PMC) · los datos, personas, pagos y verificaciones son ficticios; no se mueve dinero real.</small>
+      <small>${info.demo ? 'Prototipo académico (PMC) · los datos, personas, pagos y verificaciones son ficticios; no se mueve dinero real.' : '© UniServ · El pago retenido funciona en modo simulado mientras se integra Wompi.'}</small>
     </div></footer>
   </div>`;
 }
 
 Object.assign(ACTIONS, {
-  'auth-tab': b => openAccess(b.dataset.tab),
+  'auth-tab': b => openAccess(b.dataset.tab, regRole),
   'open-login': () => openAccess('login'),
   'cta-client': () => openAccess('register', 'cliente'),
   'cta-student': () => openAccess('register', 'estudiante'),
@@ -231,6 +244,7 @@ Object.assign(FORMS, {
   register: async f => {
     const body = { name: f.name.value, email: f.email.value, password: f.password.value, role: f.role.value };
     if (f.role.value === 'estudiante') Object.assign(body, { uni: f.uni.value, career: f.career.value, semester: +f.semester.value, supervisorId: f.supervisorId.value });
+    if (f.role.value === 'docente') Object.assign(body, { uni: f.uni.value, career: f.career.value, inviteCode: f.inviteCode.value });
     try { await api('/auth/register', 'POST', body); await enter(); toast('¡Cuenta creada!'); } catch (e) { formError(f, e.message); }
   }
 });

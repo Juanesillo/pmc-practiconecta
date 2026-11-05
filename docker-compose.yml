@@ -5,7 +5,8 @@ services:
     ports:
       - "172.17.0.1:8082:8082"   # nginx hace de proxy
     environment:
-      DEMO: "1"                 # "0" desactiva el acceso rápido sin contraseña
+      DEMO: "0"                 # "1" activa cuentas de ejemplo y acceso rápido sin contraseña (solo para presentar)
+      DOCENTE_CODE: "${DOCENTE_CODE:-}"   # código de invitación para que los docentes se registren (definir en el .env del servidor)
     volumes:
       - pmc-data:/data
 volumes:

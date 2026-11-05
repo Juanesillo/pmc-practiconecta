@@ -1,7 +1,7 @@
 const crypto = require('node:crypto');
 const path = require('node:path');
 const express = require('express');
-const { openDb, seedDemo, hashPassword, checkPassword } = require('./db');
+const { openDb, seedDemo, purgeSeed, hashPassword, checkPassword } = require('./db');
 const S = require('./seed');
 
 const SESSION_DAYS = 7;
@@ -26,9 +26,15 @@ function dayLabel(days) {
   return d.map(x => DAY_NAMES[x]).join(', ');
 }
 
-function createApp({ dbFile = ':memory:', demo = true } = {}) {
+// inviteCode: código que deben presentar los docentes para registrarse (sin él, no hay registro de docentes).
+function createApp({ dbFile = ':memory:', demo = true, inviteCode = '' } = {}) {
   const db = openDb(dbFile);
-  if (!db.prepare('SELECT 1 FROM users LIMIT 1').get()) seedDemo(db);
+  if (demo) { if (!db.prepare('SELECT 1 FROM users LIMIT 1').get()) seedDemo(db); }
+  else purgeSeed(db); // producción: nunca quedan datos ficticios
+  const sameCode = got => {
+    const a = Buffer.from(String(got || '')), b = Buffer.from(inviteCode);
+    return inviteCode.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b);
+  };
 
   const app = express();
   app.disable('x-powered-by');
@@ -186,6 +192,7 @@ function createApp({ dbFile = ':memory:', demo = true } = {}) {
   app.get('/api/public/info', (req, res) => {
     res.json({
       demo,
+      docenteSignup: inviteCode.length > 0,
       docentes: db.prepare("SELECT id, name, career, uni FROM users WHERE role = 'docente' ORDER BY name").all(),
       demoAccounts: demo ? db.prepare(`SELECT id, name, role, initials, color FROM users WHERE id IN (${[...S.CLIENTES, ...S.ESTUDIANTES, ...S.DOCENTES].map(() => '?').join(',')})
         ORDER BY CASE role WHEN 'cliente' THEN 0 WHEN 'estudiante' THEN 1 ELSE 2 END, name`).all(...[...S.CLIENTES, ...S.ESTUDIANTES, ...S.DOCENTES].map(u => u.id)) : [],
@@ -202,10 +209,22 @@ function createApp({ dbFile = ':memory:', demo = true } = {}) {
     if (name.length < 2 || name.length > 60) return fail(res, 'Escribe tu nombre (2 a 60 caracteres)', 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 80) return fail(res, 'Correo inválido', 400);
     if (password.length < 8 || password.length > 100) return fail(res, 'La contraseña debe tener al menos 8 caracteres', 400);
-    if (!['cliente', 'estudiante'].includes(role)) return fail(res, 'Rol inválido', 400);
+    if (!['cliente', 'estudiante', 'docente'].includes(role)) return fail(res, 'Rol inválido', 400);
+    if (role === 'docente') {
+      const key = `reg|${req.ip}`;
+      if (tooMany(key)) return fail(res, 'Demasiados intentos. Espera unos minutos.', 429);
+      if (!sameCode(b.inviteCode)) { attempts.get(key).push(Date.now()); return fail(res, 'Código de invitación inválido', 403); }
+    }
     if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(email)) return fail(res, 'Ese correo ya está registrado');
 
     let extra = { uni: null, career: null, semester: null, supervisor: null };
+    const uniTxt = String(b.uni || '').trim().slice(0, 60);
+    if (role === 'docente') {
+      const career = String(b.career || '').trim();
+      if (uniTxt.length < 2) return fail(res, 'Indica tu universidad', 400);
+      if (career.length < 3 || career.length > 60) return fail(res, 'Indica tu programa o facultad', 400);
+      extra = { uni: uniTxt, career, semester: null, supervisor: null };
+    }
     if (role === 'estudiante') {
       const sup = db.prepare("SELECT id FROM users WHERE id = ? AND role = 'docente'").get(b.supervisorId);
       const career = String(b.career || '').trim();
@@ -213,7 +232,8 @@ function createApp({ dbFile = ':memory:', demo = true } = {}) {
       if (!sup) return fail(res, 'Elige un docente supervisor', 400);
       if (career.length < 3 || career.length > 60) return fail(res, 'Indica tu carrera', 400);
       if (!Number.isInteger(semester) || semester < 1 || semester > 14) return fail(res, 'Semestre inválido', 400);
-      extra = { uni: String(b.uni || 'Universidad Demo').trim().slice(0, 60), career, semester, supervisor: sup.id };
+      if (!demo && uniTxt.length < 2) return fail(res, 'Indica tu universidad', 400);
+      extra = { uni: uniTxt || 'Universidad Demo', career, semester, supervisor: sup.id };
     }
     const id = 'u-' + crypto.randomBytes(5).toString('hex');
     db.prepare(`INSERT INTO users (id,email,name,role,initials,color,pass_hash,uni,career,semester,supervisor_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)

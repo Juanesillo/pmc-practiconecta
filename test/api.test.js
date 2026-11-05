@@ -48,7 +48,7 @@ test('login con contraseña, rechazo de credenciales malas y registro', async ()
   assert.equal(ok.status, 201);
   assert.equal((await n.get('/bootstrap')).body.me.name, 'Nuevo Cliente');
   const bad = await session().post('/auth/register', { name: 'X Y', email: 'x@y.com', password: 'abcdefgh', role: 'docente' });
-  assert.equal(bad.status, 400);
+  assert.equal(bad.status, 403, 'un docente no puede registrarse sin código de invitación');
 });
 
 test('detrás de un proxy HTTPS la cookie de sesión se marca Secure', async () => {
@@ -164,4 +164,47 @@ test('reiniciar la demo restablece los datos', async () => {
   assert.ok((await cli.get('/orders')).body.length > 0);
   assert.equal((await cli.post('/reset')).status, 200);
   assert.equal((await cli.get('/orders')).body.length, 0);
+});
+
+
+test('producción: se purgan los datos de ejemplo y los docentes se registran con código', async () => {
+  const { openDb, seedDemo } = require('../server/db');
+  const os = require('node:os'), path = require('node:path'), fs = require('node:fs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uniserv-'));
+  const file = path.join(dir, 'p.db');
+  // Base "vieja": con datos de ejemplo y un cliente real que contrató un servicio de ejemplo.
+  const old = openDb(file); seedDemo(old);
+  old.prepare("INSERT INTO users (id,email,name,role,pass_hash) VALUES ('u-real','real@x.co','Real','cliente','x:y')").run();
+  old.prepare("INSERT INTO orders (service_id, client_id) VALUES ('s1','u-real')").run();
+  old.close();
+
+  const srv = createApp({ dbFile: file, demo: false, inviteCode: 'secreto-123' }).listen(0);
+  await new Promise(r => srv.once('listening', r));
+  const url = `http://127.0.0.1:${srv.address().port}/api`;
+  const post = (p, b) => fetch(url + p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
+  try {
+    const info = await fetch(url + '/public/info').then(r => r.json());
+    assert.equal(info.demo, false); assert.equal(info.docenteSignup, true);
+    assert.deepEqual(info.docentes, []); assert.deepEqual(info.demoAccounts, []);
+    assert.equal((await post('/auth/switch', { userId: 'u-camila' })).status, 404);
+
+    const chk = new (require('node:sqlite').DatabaseSync)(file);
+    assert.equal(chk.prepare("SELECT COUNT(*) n FROM users WHERE email LIKE '%@demo.%'").get().n, 0);
+    assert.equal(chk.prepare('SELECT COUNT(*) n FROM services').get().n, 0);
+    assert.equal(chk.prepare('SELECT COUNT(*) n FROM orders').get().n, 0);
+    assert.equal(chk.prepare("SELECT COUNT(*) n FROM users WHERE id='u-real'").get().n, 1);
+    chk.close();
+
+    const doc = { name: 'Docente Real', email: 'doc@uni.edu.co', password: 'clave12345', role: 'docente', uni: 'Universidad X', career: 'Derecho' };
+    assert.equal((await post('/auth/register', { ...doc, inviteCode: 'mala' })).status, 403);
+    assert.equal((await post('/auth/register', doc)).status, 403);
+    assert.equal((await post('/auth/register', { ...doc, inviteCode: 'secreto-123' })).status, 201);
+    const info2 = await fetch(url + '/public/info').then(r => r.json());
+    assert.equal(info2.docentes.length, 1);
+    // Sin código configurado no se puede crear docentes.
+    const srv2 = createApp({ dbFile: ':memory:', demo: false }).listen(0);
+    await new Promise(r => srv2.once('listening', r));
+    const r2 = await fetch(`http://127.0.0.1:${srv2.address().port}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...doc, inviteCode: '' }) });
+    assert.equal(r2.status, 403); srv2.close();
+  } finally { srv.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
