@@ -224,9 +224,9 @@ function viewAuth() {
 Object.assign(ACTIONS, {
   'auth-tab': b => openAccess(b.dataset.tab, regRole),
   'open-login': () => openAccess('login'),
-  'cta-client': () => openAccess('register', 'cliente'),
-  'cta-student': () => openAccess('register', 'estudiante'),
-  'cta-uni': () => { const d = $('#access'); d.innerHTML = affiliateHtml(); if (!d.open) d.showModal(); },
+  'cta-client': () => { track('cta_click', { audience: 'cliente' }); openAccess('register', 'cliente'); },
+  'cta-student': () => { track('cta_click', { audience: 'estudiante' }); openAccess('register', 'estudiante'); },
+  'cta-uni': () => { track('cta_click', { audience: 'universidad' }); const d = $('#access'); d.innerHTML = affiliateHtml(); if (!d.open) d.showModal(); },
   'access-close': () => $('#access').close(),
   scroll: b => { $('#' + b.dataset.to)?.scrollIntoView({ behavior: 'smooth' }); },
   'demo-login': async b => {
@@ -237,15 +237,15 @@ Object.assign(ACTIONS, {
 });
 
 Object.assign(FORMS, {
-  affiliate: f => { $('#access').close(); toast('Solicitud enviada (prototipo). ¡Gracias, ' + f.name.value.split(' ')[0] + '!'); },
+  affiliate: f => { track('generate_lead', { audience: 'universidad', faculty: f.faculty.value }); $('#access').close(); toast('Solicitud enviada (prototipo). ¡Gracias, ' + f.name.value.split(' ')[0] + '!'); },
   login: async f => {
-    try { await api('/auth/login', 'POST', { email: f.email.value, password: f.password.value }); await enter(); } catch (e) { formError(f, e.message); }
+    try { await api('/auth/login', 'POST', { email: f.email.value, password: f.password.value }); track('login', { method: 'email' }); await enter(); } catch (e) { formError(f, e.message); }
   },
   register: async f => {
     const body = { name: f.name.value, email: f.email.value, password: f.password.value, role: f.role.value };
     if (f.role.value === 'estudiante') Object.assign(body, { uni: f.uni.value, career: f.career.value, semester: +f.semester.value, supervisorId: f.supervisorId.value });
     if (f.role.value === 'docente') Object.assign(body, { uni: f.uni.value, career: f.career.value, inviteCode: f.inviteCode.value });
-    try { await api('/auth/register', 'POST', body); await enter(); toast('¡Cuenta creada!'); } catch (e) { formError(f, e.message); }
+    try { await api('/auth/register', 'POST', body); track('sign_up', { method: 'email', role: body.role }); await enter(); toast('¡Cuenta creada!'); } catch (e) { formError(f, e.message); }
   }
 });
 
