@@ -117,17 +117,14 @@ function viewAuth() {
     ['building', 'Acompañamiento institucional', 'Las facultades ven el desempeño de sus estudiantes y mantienen la supervisión académica.']
   ];
   const audiences = [
-    { cls: 'aud-client', ic: 'search', tag: 'Para clientes', title: 'Encuentra el servicio que necesitas',
-      text: 'Odontología, orientación legal, psicología, ingeniería y más, con precios claros desde el inicio.',
-      list: ['Precio y criterios de liberación visibles', 'Estudiantes verificados y supervisados', 'Tu pago protegido hasta que quedes conforme'],
+    { cls: 'aud-client', ic: 'search', tag: 'Soy cliente', title: 'Quiero contratar un servicio',
+      list: ['Precio y criterios de liberación visibles', 'Estudiantes verificados y supervisados', 'Tu pago protegido hasta quedar conforme'],
       cta: 'REVISAR OFERTAS', act: 'cta-client' },
-    { cls: 'aud-student', ic: 'cap', tag: 'Para estudiantes', title: 'Gana experiencia real y paga tu semestre',
-      text: 'Si estás en últimos semestres de odontología, ingeniería, diseño o tutorías, publica lo que sabes hacer.',
-      list: ['Perfil verificado que genera confianza', 'Práctica supervisada por tu docente', 'Pagos seguros y reputación que te acompaña'],
+    { cls: 'aud-student', ic: 'cap', tag: 'Soy estudiante', title: 'Quiero ofrecer lo que sé hacer',
+      list: ['Perfil verificado que genera confianza', 'Práctica real supervisada por tu docente', 'Pagos seguros y reputación que crece contigo'],
       cta: 'CREAR PERFIL Y PRIMER OFERTA', act: 'cta-student' },
-    { cls: 'aud-uni', ic: 'building', tag: 'Para universidades', title: 'Lleva la práctica de tu facultad al mercado',
-      text: 'Derecho y Psicología ya administran sus consultorios con UniServ. Súmate y supervisa a tus estudiantes.',
-      list: ['Seguimiento de casos y estudiantes', 'Supervisión docente integrada', 'Impacto social medible'],
+    { cls: 'aud-uni', ic: 'building', tag: 'Soy universidad', title: 'Quiero afiliar mi facultad',
+      list: ['Seguimiento de casos y estudiantes', 'Supervisión docente integrada', 'Derecho y Psicología ya administran su consultorio'],
       cta: 'AFILIARSE CON NOSOTROS', act: 'cta-uni' }
   ];
 
@@ -135,7 +132,7 @@ function viewAuth() {
     <header class="site-nav"><div class="wrap site-nav-in">
       <a class="brand" href="#/"><img class="logo" src="logo.png" alt="" width="27" height="31">UniServ</a>
       <nav class="site-links" aria-label="Secciones">
-        <button type="button" class="navbtn" data-act="scroll" data-to="audiencias">¿Quién eres?</button>
+        <button type="button" class="navbtn" data-act="scroll" data-to="audiencias">Empezar</button>
         <button type="button" class="navbtn" data-act="scroll" data-to="como-funciona">Cómo funciona</button>
         <button type="button" class="navbtn" data-act="scroll" data-to="beneficios">Beneficios</button>
       </nav>
@@ -145,58 +142,53 @@ function viewAuth() {
       </div>
     </div></header>
 
-    <section class="hero"><div class="wrap hero-in">
+    <section class="hero" id="audiencias"><div class="wrap">
       <div class="hero-copy">
-        <span class="eyebrow">${icon('shield-check', 15)} Talento universitario verificado</span>
-        <h1>Servicios hechos por estudiantes, <em>supervisados por docentes</em>.</h1>
-        <p class="lead">Contrata a futuros profesionales a un precio justo. Tu dinero queda en pago retenido y solo se libera cuando el servicio se cumple.</p>
-        <div class="hero-cta">
-          <button type="button" class="btn primary lg" data-act="scroll" data-to="audiencias">Elegir mi camino ${icon('arrow-right', 16)}</button>
-          <button type="button" class="btn ghost lg" data-act="scroll" data-to="como-funciona">Ver cómo funciona</button>
-        </div>
-        <ul class="trust">
-          <li>${icon('shield-check', 17)} Identidad verificada</li>
-          <li>${icon('lock', 17)} Pago retenido con Wompi</li>
-          <li>${icon('clipboard', 17)} Supervisión docente</li>
-        </ul>
+        <span class="eyebrow">${icon('shield-check', 15)} Marketplace de talento universitario</span>
+        <h1>Conecta con <em>talento universitario verificado</em>.</h1>
+        <p class="lead">Servicios hechos por estudiantes de últimos semestres, supervisados por sus docentes y con el pago protegido hasta que el servicio se cumple.</p>
       </div>
-      <aside class="hero-card" aria-label="Ejemplo de pago retenido">
-        <div class="hc-head"><span>Ejemplo de servicio</span><span class="badge ok">${icon('lock', 12)} Pago retenido</span></div>
-        <h3>Valoración y limpieza dental</h3>
-        <p class="muted" style="margin:.1rem 0 .9rem">Estudiante de Odontología · supervisada por docente</p>
-        <div class="hc-price"><strong>$45.000</strong><small>precio visible antes de pagar</small></div>
-        <ol class="hc-steps">
-          <li class="done"><span>${icon('check', 13)}</span>Perfil y aval docente verificados</li>
-          <li class="done"><span>${icon('check', 13)}</span>Pago retenido de forma segura</li>
-          <li class="now"><span>3</span>Servicio supervisado por el docente</li>
-          <li><span>4</span>Confirmas y se libera el pago</li>
-        </ol>
-        <small class="hc-note">Ejemplo ilustrativo del flujo.</small>
-      </aside>
-    </div></section>
-
-    <section class="section" id="audiencias"><div class="wrap">
-      <div class="sec-head"><span class="eyebrow">Empieza aquí</span><h2>¿Cómo quieres usar UniServ?</h2>
-        <p>Elige tu perfil y entra directo al flujo pensado para ti.</p></div>
+      <p class="pick">¿Cómo quieres usar UniServ?</p>
       <div class="aud-grid">
         ${audiences.map(a => `
         <article class="aud ${a.cls}">
-          <div class="aud-ic">${icon(a.ic, 24)}</div>
-          <span class="aud-tag">${a.tag}</span>
-          <h3>${a.title}</h3>
-          <p>${a.text}</p>
+          <div class="aud-head"><div class="aud-ic">${icon(a.ic, 22)}</div><div><span class="aud-tag">${a.tag}</span><h3>${a.title}</h3></div></div>
           <ul>${a.list.map(l => `<li>${icon('check', 15)}${l}</li>`).join('')}</ul>
           <button class="btn cta" type="button" data-act="${a.act}">${a.cta} ${icon('arrow-right', 16)}</button>
         </article>`).join('')}
       </div>
     </div></section>
 
+    <section class="trustbar"><div class="wrap">
+      <ul class="trust">
+        <li>${icon('shield-check', 18)} Identidad y matrícula verificadas</li>
+        <li>${icon('lock', 18)} Pago retenido con Wompi</li>
+        <li>${icon('clipboard', 18)} Supervisión de un docente</li>
+        <li>${icon('receipt', 18)} Precios visibles antes de pagar</li>
+      </ul>
+    </div></section>
+
     <section class="section alt" id="como-funciona"><div class="wrap">
       <div class="sec-head"><span class="eyebrow">Cómo funciona</span><h2>Confianza en cada paso</h2>
         <p>Cuatro actividades clave protegen a quien contrata y a quien presta el servicio.</p></div>
-      <ol class="steps">
-        ${steps.map(([ic, t, d], i) => `<li><span class="step-n">${i + 1}</span><div class="step-ic">${icon(ic, 22)}</div><h3>${t}</h3><p>${d}</p></li>`).join('')}
-      </ol>
+      <div class="how">
+        <aside class="hero-card" aria-label="Ejemplo de pago retenido">
+          <div class="hc-head"><span>Así se ve un servicio</span><span class="badge ok">${icon('lock', 12)} Pago retenido</span></div>
+          <h3>Valoración y limpieza dental</h3>
+          <p class="muted" style="margin:.1rem 0 .9rem">Estudiante de Odontología · supervisada por docente</p>
+          <div class="hc-price"><strong>$45.000</strong><small>precio visible antes de pagar</small></div>
+          <ol class="hc-steps">
+            <li class="done"><span>${icon('check', 13)}</span>Perfil y aval docente verificados</li>
+            <li class="done"><span>${icon('check', 13)}</span>Pago retenido de forma segura</li>
+            <li class="now"><span>3</span>Servicio supervisado por el docente</li>
+            <li><span>4</span>Confirmas y se libera el pago</li>
+          </ol>
+          <small class="hc-note">Ejemplo ilustrativo del flujo.</small>
+        </aside>
+        <ol class="steps">
+          ${steps.map(([ic, t, d], i) => `<li><span class="step-n">${i + 1}</span><div class="step-ic">${icon(ic, 22)}</div><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}
+        </ol>
+      </div>
     </div></section>
 
     <section class="section" id="beneficios"><div class="wrap">
