@@ -208,3 +208,33 @@ test('producción: se purgan los datos de ejemplo y los docentes se registran co
     assert.equal(r2.status, 403); srv2.close();
   } finally { srv.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+
+test('el estudiante se registra sin docente y lo elige después', async () => {
+  const s = session();
+  const reg = await s.post('/auth/register', { name: 'Sin Docente', email: 'sindocente@x.co', password: 'abcdefgh', role: 'estudiante', uni: 'U Test', career: 'Diseño', semester: 8 });
+  assert.equal(reg.status, 201);
+  let me = (await s.get('/bootstrap')).body.me;
+  assert.equal(me.supervisorId, null);
+  assert.equal(me.supervisor, null);
+  // Valida sus pasos sin docente: se permite, pero no puede publicar hasta el aval.
+  assert.equal((await s.post('/verification/0')).status, 200);
+  assert.equal((await s.post('/services', { category: 'ingenieria', title: 'Prueba', price: 20000, mode: 'virtual', scope: 'Alcance de prueba', days: '1', times: '10:00' })).status >= 400, true);
+  // Elección de docente: inválido y válido.
+  assert.equal((await s.post('/me/supervisor', { supervisorId: 'no-existe' })).status, 400);
+  assert.equal((await s.post('/me/supervisor', { supervisorId: 'd-ricardo' })).status, 200);
+  me = (await s.get('/bootstrap')).body.me;
+  assert.equal(me.supervisorId, 'd-ricardo');
+  // Un docente que no es suyo no puede avalarlo; el suyo sí (tras los 3 pasos).
+  const st = me.id;
+  await s.post('/verification/1'); await s.post('/verification/2');
+  const otro = await login('d-martha');
+  assert.equal((await otro.post(`/students/${st}/endorse`)).status, 403);
+  const suyo = await login('d-ricardo');
+  assert.equal((await suyo.post(`/students/${st}/endorse`)).status, 200);
+  // Con aval ya no puede cambiar de docente.
+  assert.equal((await s.post('/me/supervisor', { supervisorId: 'd-martha' })).status, 400);
+  // Un cliente no puede usar este endpoint.
+  const cli = await login('u-client');
+  assert.equal((await cli.post('/me/supervisor', { supervisorId: 'd-martha' })).status, 403);
+});

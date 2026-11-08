@@ -316,8 +316,19 @@ function viewPerfil() {
 function verifList(v, canAct) {
   return `<ul class="checklist">${VERIFICATION_STEPS.map((s, i) => `<li class="${v[i] ? 'ok' : ''}">
     <span class="tick">${v[i] ? icon('check', 13) : ''}</span>
-    <div><strong>${s.title}</strong><small>${v[i] ? s.detail : (i === 3 ? 'Pendiente del docente supervisor' : 'Pendiente de validación')}</small></div>
+    <div><strong>${s.title}</strong><small>${v[i] ? s.detail : (i === 3 ? (D.me.supervisorId ? 'Pendiente del docente supervisor' : 'Elige un docente supervisor para recibir tu aval') : 'Pendiente de validación')}</small></div>
     ${canAct && !v[i] && s.action ? `<button class="btn secondary sm" type="button" data-act="verify" data-step="${i}">${s.action}</button>` : ''}</li>`).join('')}</ul>`;
+}
+
+// Elegir o cambiar de docente supervisor (mientras no tenga el aval).
+function supervisorPicker(me, v) {
+  if (v[3]) return '';
+  const list = D.docentes || [];
+  if (!list.length) return `<p class="note">${icon('info', 14)} Aún no hay docentes registrados en la plataforma. Cuando haya, podrás elegir a tu supervisor aquí.</p>`;
+  return `<div class="sup-pick"><label class="field">${me.supervisorId ? 'Cambiar docente supervisor' : 'Elige tu docente supervisor'}
+      <select id="sup-select">${me.supervisorId ? '' : '<option value="">Selecciona…</option>'}${list.map(d => `<option value="${esc(d.id)}" ${d.id === me.supervisorId ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></label>
+    <button class="btn secondary sm" type="button" data-act="set-supervisor">Guardar</button></div>
+    ${me.supervisorId ? '' : `<p class="note">Puedes usar la plataforma sin docente, pero necesitas uno para recibir el aval y publicar servicios.</p>`}`;
 }
 
 function perfilEstudiante() {
@@ -331,7 +342,8 @@ function perfilEstudiante() {
         ${ok ? `<span class="badge ok">${icon('shield-check', 13)} Perfil verificado</span>` : '<span class="badge warn">Verificación pendiente</span>'}</div></div>
       <dl class="facts"><div><dt>Horas de práctica</dt><dd>${me.hours} h</dd></div>
         <div><dt>Reputación</dt><dd>${stars(me.rating)} ${me.reviews ? `<small>(${me.reviews})</small>` : ''}</dd></div>
-        <div><dt>Docente supervisor</dt><dd>${esc(me.supervisor || '—')}</dd></div></dl></div>
+        <div><dt>Docente supervisor</dt><dd>${esc(me.supervisor || 'Sin asignar')}</dd></div></dl>
+      ${supervisorPicker(me, v)}</div>
     <div class="card"><h2>Verificación <span class="badge ${ok ? 'ok' : 'info'}">${done}/${VERIFICATION_STEPS.length}</span></h2>
       <div class="progress"><span style="width:${done / VERIFICATION_STEPS.length * 100}%"></span></div>
       ${verifList(v, true)}
@@ -403,6 +415,7 @@ Object.assign(ACTIONS, {
     saveUi(); render();
   },
   fclear: () => { ui.filters = { category: 'all', maxPrice: 80000, mode: 'any', q: '', sort: 'match' }; saveUi(); render(); },
+  'set-supervisor': () => { const id = $('#sup-select')?.value; if (!id) return toast('Elige un docente de la lista'); act(() => api('/me/supervisor', 'POST', { supervisorId: id }), 'Docente supervisor guardado'); },
   verify: b => act(() => api(`/verification/${b.dataset.step}`, 'POST'), 'Paso validado'),
   endorse: b => act(() => api(`/students/${b.dataset.id}/endorse`, 'POST'), 'Aval registrado'),
   'svc-new': () => { ui.editSvc = 'new'; saveUi(); render(); },

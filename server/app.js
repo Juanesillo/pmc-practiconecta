@@ -226,14 +226,16 @@ function createApp({ dbFile = ':memory:', demo = true, inviteCode = '' } = {}) {
       extra = { uni: uniTxt, career, semester: null, supervisor: null };
     }
     if (role === 'estudiante') {
-      const sup = db.prepare("SELECT id FROM users WHERE id = ? AND role = 'docente'").get(b.supervisorId);
+      // El docente supervisor es opcional al registrarse: se puede elegir después desde el perfil.
+      const wantsSup = String(b.supervisorId || '').trim() !== '';
+      const sup = wantsSup ? db.prepare("SELECT id FROM users WHERE id = ? AND role = 'docente'").get(b.supervisorId) : null;
       const career = String(b.career || '').trim();
       const semester = Number(b.semester);
-      if (!sup) return fail(res, 'Elige un docente supervisor', 400);
+      if (wantsSup && !sup) return fail(res, 'Ese docente no existe', 400);
       if (career.length < 3 || career.length > 60) return fail(res, 'Indica tu carrera', 400);
       if (!Number.isInteger(semester) || semester < 1 || semester > 14) return fail(res, 'Semestre inválido', 400);
       if (!demo && uniTxt.length < 2) return fail(res, 'Indica tu universidad', 400);
-      extra = { uni: uniTxt || 'Universidad Demo', career, semester, supervisor: sup.id };
+      extra = { uni: uniTxt || 'Universidad Demo', career, semester, supervisor: sup ? sup.id : null };
     }
     const id = 'u-' + crypto.randomBytes(5).toString('hex');
     db.prepare(`INSERT INTO users (id,email,name,role,initials,color,pass_hash,uni,career,semester,supervisor_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
@@ -301,6 +303,20 @@ function createApp({ dbFile = ':memory:', demo = true, inviteCode = '' } = {}) {
 
   app.post('/api/notifications/read', needAuth, (req, res) => {
     db.prepare('UPDATE notifications SET read = 1 WHERE user_id = ?').run(req.user.id);
+    res.json({ ok: true });
+  });
+
+  // El estudiante elige (o cambia) su docente supervisor mientras no tenga el aval.
+  app.post('/api/me/supervisor', needAuth, needRole('estudiante'), (req, res) => {
+    const sup = db.prepare("SELECT id, name FROM users WHERE id = ? AND role = 'docente'").get(String(req.body?.supervisorId || ''));
+    if (!sup) return fail(res, 'Elige un docente de la lista', 400);
+    if (verifOf(req.user.id)[3]) return fail(res, 'Tu aval ya fue otorgado; no puedes cambiar de docente', 400);
+    if (req.user.supervisor_id === sup.id) return res.json({ ok: true });
+    db.prepare('UPDATE users SET supervisor_id = ? WHERE id = ?').run(sup.id, req.user.id);
+    const ready = verifOf(req.user.id).slice(0, 3).every(Boolean);
+    notify(sup.id, 'verif', ready
+      ? `${req.user.name} te eligió como supervisor y espera tu aval.`
+      : `${req.user.name} te eligió como su docente supervisor.`);
     res.json({ ok: true });
   });
 

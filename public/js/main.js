@@ -55,6 +55,7 @@ function render() {
     const el = $('#chat-input');
     if (el && !el.disabled) { el.value = keep.value; el.focus(); el.setSelectionRange(keep.pos, keep.pos); }
   }
+  trackView();
   const back = $('#back-cases');
   if (back) { back.removeAttribute('style'); back.classList.add('mobile-only'); }
 }

@@ -37,9 +37,8 @@ function accessHtml() {
         <label><span data-role-label>${regRole === 'docente' ? 'Programa o facultad' : 'Carrera'}</span><input name="career" maxlength="60" placeholder="Odontología, Derecho…"></label>
         <div id="reg-student" class="auth-form" ${regRole === 'estudiante' ? '' : 'hidden'}>
           <label>Semestre<input name="semester" type="number" min="1" max="14" value="8"></label>
-          <label>Docente supervisor
-            ${info.docentes.length ? `<select name="supervisorId">${info.docentes.map(d => `<option value="${esc(d.id)}">${esc(d.name)} · ${esc(d.career)}${d.uni ? ' · ' + esc(d.uni) : ''}</option>`).join('')}</select>`
-              : `<select name="supervisorId" disabled><option value="">Aún no hay docentes registrados</option></select>`}</label>
+          <label>Docente supervisor <small>(opcional, puedes elegirlo después)</small>
+            <select name="supervisorId"><option value="">Lo elegiré después</option>${info.docentes.map(d => `<option value="${esc(d.id)}">${esc(d.name)} · ${esc(d.career)}${d.uni ? ' · ' + esc(d.uni) : ''}</option>`).join('')}</select></label>
         </div>
         <label id="reg-code" ${regRole === 'docente' ? '' : 'hidden'}>Código de invitación<input name="inviteCode" type="password" autocomplete="off"></label>
       </div>
