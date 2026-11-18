@@ -23,14 +23,28 @@ function openDb(file) {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
+  // Sin esto el WAL crece hasta 1000 páginas antes del primer checkpoint, así que todos los
+  // datos viven en pmc.db-wal y pmc.db se queda vacío: si se pierde el -wal (una copia, un
+  // backup o mover solo pmc.db) se pierde la base entera. Con 32 páginas, pmc.db se mantiene al día.
+  db.exec('PRAGMA wal_autocheckpoint = 32');
 
-  // Versión de esquema distinta: es un prototipo, se descartan los datos antiguos.
-  if (db.prepare('PRAGMA user_version').get().user_version !== SCHEMA_VERSION) {
-    db.exec('PRAGMA foreign_keys = OFF;');
-    for (const t of db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all()) {
-      db.exec(`DROP TABLE IF EXISTS "${t.name}"`);
+  const version = db.prepare('PRAGMA user_version').get().user_version;
+  if (version !== SCHEMA_VERSION) {
+    const hasUsers = db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users'").get()
+      && db.prepare('SELECT 1 FROM users LIMIT 1').get();
+    if (version === 0 && hasUsers) {
+      // Hay datos pero el archivo no trae la versión del esquema. Es el síntoma de haber
+      // perdido el -wal, no el de un cambio de esquema: borrar aquí destruiría la base en
+      // silencio, así que se conserva y se avisa.
+      console.warn('Aviso: la base tiene datos pero no versión de esquema (¿se perdió el archivo -wal?). Se conservan los datos.');
+    } else {
+      // Versión de esquema distinta: es un prototipo, se descartan los datos antiguos.
+      db.exec('PRAGMA foreign_keys = OFF;');
+      for (const t of db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all()) {
+        db.exec(`DROP TABLE IF EXISTS "${t.name}"`);
+      }
+      db.exec('PRAGMA foreign_keys = ON;');
     }
-    db.exec('PRAGMA foreign_keys = ON;');
   }
 
   db.exec(`
