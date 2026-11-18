@@ -89,6 +89,82 @@ Los datos viven en el volumen `pmc-data`. Actualizar: `git pull && docker compos
 
 **Sin Docker:** se puede usar `deploy/pmc.service` (systemd, Node ≥ 22.13) y apuntar Caddy a `127.0.0.1:3000`.
 
+## Cuentas de prueba para una demo en vivo (producción)
+
+Con `DEMO=0` las cuentas de ejemplo se borran en cada arranque, así que una demo en vivo
+necesita cuentas **reales**. `scripts/provision-demo.js` las crea por la API pública, de modo
+que quedan como registros normales y `purgeSeed` no las toca al reiniciar.
+
+Crea tres docentes (Odontología, Derecho y Psicología), seis estudiantes verificados y avalados
+con un servicio publicado cada uno, y dos clientes.
+
+```bash
+# 1. En el servidor: define el código de invitación y reinicia
+#    (sin DOCENTE_CODE nadie puede registrarse como docente y el marketplace queda vacío)
+echo 'DOCENTE_CODE=un-secreto-propio' >> .env
+docker compose up -d
+
+# 2. Desde cualquier máquina
+npm run provision -- --url https://uniserv.TU-DOMINIO.dev --code un-secreto-propio --cases
+```
+
+| Opción | Efecto |
+|---|---|
+| `--url <base>` | Instancia destino (por defecto `http://localhost:3000`) |
+| `--code <código>` | El `DOCENTE_CODE` del servidor. Obligatorio para crear docentes. |
+| `--password <pw>` | Contraseña de todas las cuentas (por defecto `UniServ2026*`) |
+| `--cases` | Crea además dos casos: uno cerrado y calificado, y otro en supervisión |
+| `--check` | No escribe nada: informa el estado de la instancia |
+
+Es idempotente: si una cuenta ya existe inicia sesión y sigue; si el servicio ya está publicado
+no lo duplica. `--check` sirve para verificar antes de la sustentación que la instancia tiene
+docentes y que el registro de docentes sigue habilitado:
+
+```bash
+npm run provision -- --url https://uniserv.TU-DOMINIO.dev --check
+```
+
+Las universidades de las cuentas son ficticias a propósito (`Universidad Demo del Norte`, etc.):
+no se le atribuye a una institución real haber verificado a esas personas.
+
+## Simulación de tráfico para Analítica (Google Analytics GA4)
+
+El proyecto incluye un simulador de tráfico automatizado (`scripts/simulate-traffic.js`) que usa un navegador real (Chromium / Google Chrome en modo headless o con ventana visible) para generar tráfico con interacción humana verosímil sobre el dominio en producción (`https://uniserv.dvergaram.dev/`) o en local.
+
+Al usar un navegador real, ejecuta el snippet de **Google Tag Manager / GA4 (`gtag.js`)** y activa la telemetría real:
+- Vistas de página (`page_view`)
+- Desplazamiento y profundidad de lectura (`scroll`)
+- Clics en llamadas a la acción (`cta_click` con audiencias de cliente, estudiante o universidad)
+- Conversiones del formulario institucional (`generate_lead`)
+- Tiempo de permanencia real y engagement
+- Variedad de dispositivos (Desktop Windows/Mac, Móviles iPhone/Galaxy)
+- Diferentes fuentes de adquisición (Google orgánico, Instagram Stories/Bio, LinkedIn, WhatsApp y campañas con parámetros UTM)
+
+### Comandos disponibles:
+
+```bash
+# Simular un lote de 5 visitantes (por defecto)
+npm run simulate
+
+# Simular N visitantes específicos (ej. 15 visitantes)
+npm run simulate -- --count 15
+
+# Simular tráfico continuo en bucle (ideal para ver usuarios activos en tiempo real en GA4)
+npm run simulate:continuous
+
+# Simular con navegador visible (para observar la interacción en pantalla)
+npm run simulate:headful
+
+# Simular perfiles o embudos específicos (--persona):
+# explore | client_cta | student_cta | lead | login_view | bounce
+npm run simulate -- --persona lead --count 3
+
+# Simular varios usuarios concurrentes (ej. 3 a la vez)
+npm run simulate -- --concurrency 3 --count 10
+```
+
+Para detener la simulación continua, presiona `Ctrl + C`. El script mostrará un reporte consolidado con los eventos y conversiones registradas.
+
 ## Estructura
 
 ```
