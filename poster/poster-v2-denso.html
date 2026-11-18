@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>UniServ · Póster</title>
+<style>
+@font-face { font-family:'Inter'; src:url('assets/inter-latin.woff2') format('woff2'); font-weight:400 700; font-display:block; }
+
+/* Formato: 90 x 120 cm vertical. Para A0 cambia a 841mm 1189mm. */
+:root{
+  --W: 900mm; --H: 1200mm;
+  --pad: 42mm; --gut: 20mm;
+  --navy:#0e2e54; --ink:#101826; --text:#2b3a4d; --muted:#67748a;
+  --rule:#1d2b3d; --hair:#c3ccd8;
+}
+@page{ size:900mm 1200mm; margin:0; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ width:var(--W); height:var(--H); }
+body{
+  font-family:'Inter',system-ui,sans-serif; color:var(--text);
+  font-size:11mm; line-height:1.42; background:#fff;
+  -webkit-font-smoothing:antialiased; font-feature-settings:'kern' 1;
+}
+.sheet{ width:var(--W); height:var(--H); display:flex; flex-direction:column; overflow:hidden; }
+
+/* ---------- Cabecera ---------- */
+header{ padding:34mm var(--pad) 0; }
+.inst{ display:flex; align-items:baseline; justify-content:space-between; gap:14mm;
+       font-size:8.4mm; color:var(--muted); letter-spacing:.01em; }
+.inst strong{ color:var(--ink); font-weight:600; }
+.inst .mark{ display:flex; align-items:center; gap:4mm; font-size:11mm; font-weight:700;
+             color:var(--navy); letter-spacing:-.01em; }
+.inst .mark img{ height:13mm; }
+.hr{ height:1.4mm; background:var(--rule); margin:9mm 0 14mm; }
+.hr.thin{ height:.5mm; background:var(--hair); }
+h1{ font-size:34mm; line-height:1.02; font-weight:700; color:var(--ink);
+    letter-spacing:-.03em; max-width:760mm; }
+.standfirst{ font-size:13mm; line-height:1.32; color:var(--muted); font-weight:400;
+             margin-top:11mm; max-width:720mm; }
+
+/* ---------- Cuerpo ---------- */
+main{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:var(--gut);
+      padding:22mm var(--pad) 0; min-height:0; }
+.col{ display:flex; flex-direction:column; min-height:0; justify-content:space-between; }
+.block{ padding-top:7mm; border-top:1mm solid var(--rule); }
+.block:last-child{ margin-bottom:0; }
+.label{ font-size:8.6mm; font-weight:700; color:var(--navy); text-transform:uppercase;
+        letter-spacing:.14em; margin-bottom:8mm; }
+
+p{ margin-bottom:6mm; }
+p:last-child{ margin-bottom:0; }
+b,strong{ font-weight:700; color:var(--ink); }
+.note{ font-size:9.2mm; color:var(--muted); line-height:1.36; }
+
+/* Cifra editorial */
+.figure{ margin:9mm 0; }
+.figure .v{ font-size:33mm; font-weight:700; color:var(--navy); letter-spacing:-.04em;
+            line-height:1; display:block; }
+.figure .l{ font-size:9.6mm; color:var(--text); line-height:1.34; display:block; margin-top:3.5mm; }
+
+/* Listas con filete */
+dl{ border-top:.5mm solid var(--hair); }
+dl div{ display:flex; gap:7mm; align-items:baseline; padding:5.4mm 0;
+        border-bottom:.5mm solid var(--hair); }
+dl dt{ flex:1; font-size:10.2mm; color:var(--text); }
+dl dt small{ display:block; font-size:8.6mm; color:var(--muted); margin-top:1mm; line-height:1.3; }
+dl dd{ font-size:10.2mm; font-weight:700; color:var(--ink); white-space:nowrap;
+       font-variant-numeric:tabular-nums; }
+dl dd.big{ font-size:15mm; letter-spacing:-.02em; color:var(--navy); }
+
+/* Pasos */
+ol{ list-style:none; counter-reset:s; border-top:.5mm solid var(--hair); }
+ol li{ counter-increment:s; display:flex; gap:6mm; padding:5.8mm 0;
+       border-bottom:.5mm solid var(--hair); }
+ol li::before{ content:counter(s,decimal-leading-zero); font-size:9mm; font-weight:700;
+               color:var(--navy); width:11mm; flex:none; padding-top:1mm;
+               font-variant-numeric:tabular-nums; }
+ol li b{ display:block; font-size:10.8mm; margin-bottom:1.5mm; }
+ol li span{ font-size:9.6mm; color:var(--muted); line-height:1.32; display:block; }
+
+blockquote{ font-size:13.2mm; line-height:1.26; color:var(--ink); letter-spacing:-.01em;
+            margin:9mm 0 0; }
+blockquote cite{ display:block; font-style:normal; font-size:9mm; color:var(--muted);
+                 margin-top:4mm; letter-spacing:0; }
+
+/* Capturas */
+figure{ margin-bottom:9mm; }
+figure:last-child{ margin-bottom:0; }
+figure img{ width:100%; display:block; border:.5mm solid var(--hair); }
+figure figcaption{ font-size:9mm; color:var(--muted); line-height:1.3; margin-top:3.5mm; }
+
+/* Validación: tres cifras */
+.triad{ display:flex; gap:11mm; margin-bottom:8mm; }
+.triad div{ flex:1; }
+.triad .v{ font-size:23mm; font-weight:700; color:var(--navy); letter-spacing:-.03em;
+           line-height:1; display:block; }
+.triad .l{ font-size:9mm; color:var(--muted); line-height:1.28; display:block; margin-top:3mm; }
+
+/* ---------- Pie ---------- */
+footer{ margin-top:20mm; background:var(--navy); color:#b9cbe1; padding:17mm var(--pad) 15mm; }
+.frow{ display:flex; gap:20mm; align-items:flex-start; }
+.qr{ display:flex; gap:10mm; flex:none; }
+.qr figure{ margin:0; text-align:center; }
+.qr .box{ width:62mm; height:62mm; background:#fff; padding:3.5mm; }
+.qr .box img{ width:100%; height:100%; display:block; border:0; }
+.qr figcaption{ font-size:7.8mm; color:#fff; font-weight:600; margin-top:4mm; }
+.qr figcaption span{ display:block; font-weight:400; color:#8aa8c9; font-size:6.8mm; margin-top:1mm; }
+.fcol{ flex:1; }
+.fcol h4{ font-size:7.6mm; font-weight:700; color:#fff; text-transform:uppercase;
+          letter-spacing:.14em; margin-bottom:4mm; }
+.fcol p{ font-size:9.4mm; color:#e4ecf5; margin-bottom:0; }
+.fcol .gap{ margin-top:9mm; }
+.sources{ font-size:6.8mm; color:#7d9bbd; line-height:1.45; margin-top:11mm;
+          padding-top:8mm; border-top:.5mm solid rgba(255,255,255,.22); }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header>
+  <div class="inst">
+    <div><strong>Universidad de los Andes</strong> · Facultad de Ingeniería<br>
+         ISIS-2007 Diseño de Productos e Innovación en TI · 2026</div>
+    <div class="mark"><img src="assets/logo.png" alt="">UniServ</div>
+  </div>
+  <div class="hr"></div>
+  <h1>Práctica supervisada,<br>abierta a quien la necesita</h1>
+  <p class="standfirst">Marketplace donde estudiantes de últimos semestres prestan servicios bajo
+     supervisión de su docente, con el pago retenido hasta que el servicio se cumple.</p>
+</header>
+
+<main>
+
+  <!-- ============ COLUMNA 1 ============ -->
+  <section class="col">
+    <div class="block">
+      <p class="label">Problema</p>
+      <p>El estudiante de práctica necesita pacientes, casos o clientes reales para cumplir
+         requisitos académicos. Hoy los consigue por WhatsApp y voz a voz, sin respaldo ni registro.</p>
+      <div class="figure">
+        <span class="v">1 de 8</span>
+        <span class="l">personas contactadas terminaron contratando a Alejandro, tutor
+          independiente entrevistado para este proyecto.</span>
+      </div>
+      <p>Del otro lado, quien busca un servicio más económico no tiene cómo saber si quien lo
+         atiende está verificado, ni quién responde si algo sale mal.</p>
+    </div>
+
+    <div class="block">
+      <p class="label">Entrevistas de descubrimiento</p>
+      <dl>
+        <div><dt>La supervisión de un docente da tranquilidad</dt><dd>7 de 7</dd></div>
+        <div><dt>Piden reseñas y calificaciones verificables</dt><dd>6 de 7</dd></div>
+        <div><dt>Esperan pagar menos que a un profesional titulado</dt><dd>7 de 7</dd></div>
+      </dl>
+      <p class="note" style="margin-top:7mm">Diez entrevistas: siete clientes potenciales,
+         dos proveedores y una fuera de segmento.</p>
+      <blockquote>“Perdí todos mis contactos al cambiar de teléfono.”
+        <cite>Felipe, tutor independiente</cite></blockquote>
+    </div>
+
+    <div class="block">
+      <p class="label">Competencia</p>
+      <p>Ninguna alternativa actual combina supervisión docente y pago formal protegido.</p>
+      <dl>
+        <div><dt>Consultorio de la facultad<small>Agenda limitada, pocos casos por semestre</small></dt></div>
+        <div><dt>Redes sociales y voz a voz<small>Sin verificación ni respaldo institucional</small></dt></div>
+        <div><dt>Marketplaces de freelance<small>Sin aval académico ni supervisión</small></dt></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ============ COLUMNA 2 ============ -->
+  <section class="col">
+    <div class="block">
+      <p class="label">Cómo funciona</p>
+      <ol>
+        <li><span><b>Perfil verificado</b>Identidad y matrícula; el docente supervisor da el aval.</span></li>
+        <li><span><b>Búsqueda y contacto</b>Filtros por categoría, precio y modalidad; chat con el estudiante.</span></li>
+        <li><span><b>Acuerdo explícito</b>Ambas partes aceptan alcance y precio antes de agendar.</span></li>
+        <li><span><b>Agenda y pago retenido</b>Se reserva el horario real y el dinero queda en custodia.</span></li>
+        <li><span><b>Supervisión docente</b>El docente registra los pasos y cierra el servicio.</span></li>
+        <li><span><b>Liberación o disputa</b>El cliente libera el pago; si hay problema, el docente resuelve.</span></li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <p class="label">El producto</p>
+      <figure><img src="assets/shot-explorar.png" alt="">
+        <figcaption>Cada servicio muestra qué docente supervisa al estudiante antes de contratar.</figcaption></figure>
+      <figure><img src="assets/shot-docente.png" alt="">
+        <figcaption>El caso avanza por seis estados visibles para cliente, estudiante y docente.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ============ COLUMNA 3 ============ -->
+  <section class="col">
+    <div class="block">
+      <p class="label">Validación</p>
+      <div class="triad">
+        <div><span class="v">92%</span><span class="l">le sería útil<br>11 de 12</span></div>
+        <div><span class="v">9,1</span><span class="l">utilidad percibida<br>sobre 10</span></div>
+        <div><span class="v">8,0</span><span class="l">facilidad de uso<br>sobre 10</span></div>
+      </div>
+      <p class="note">Doce entrevistas con prueba del prototipo: siete estudiantes y cinco clientes
+         potenciales. Cinco no lograron actuar en menos de cinco minutos y tres de ellos no sabían
+         qué escribir; se añadieron plantillas de perfil, de servicio y de primer mensaje.</p>
+      <blockquote>“Me ahorró mucho tiempo buscando un tutor.”
+        <cite>Levis, cliente · prueba del prototipo</cite></blockquote>
+    </div>
+
+    <div class="block">
+      <p class="label">Modelo de negocio</p>
+      <dl>
+        <div><dt>Comisión por servicio cerrado<small>62% de los ingresos a tres años</small></dt><dd>11,9%</dd></div>
+        <div><dt>Licencia de administración a facultades<small>28% de los ingresos</small></dt><dd>$6 M/sem.</dd></div>
+        <div><dt>Suscripción Premium del estudiante<small>9% de los ingresos</small></dt><dd>$14.900/mes</dd></div>
+        <div><dt>Ticket promedio ponderado</dt><dd class="big">$104.150</dd></div>
+        <div><dt>Margen de utilidad a tres años</dt><dd class="big">30,2%</dd></div>
+      </dl>
+      <p class="note" style="margin-top:7mm">Derecho y Psicología son gratuitos para el usuario por
+         ley; ahí la facultad paga la licencia.</p>
+    </div>
+
+    <div class="block">
+      <p class="label">Mercado</p>
+      <dl>
+        <div><dt>Pregrados con práctica obligatoria en Colombia</dt><dd class="big">70.000</dd></div>
+        <div><dt>Uniandes y Javeriana</dt><dd class="big">5.000</dd></div>
+        <div><dt>En semestre de práctica activa</dt><dd class="big">1.500</dd></div>
+        <div><dt>Piloto con tres docentes embajadores</dt><dd class="big">30</dd></div>
+      </dl>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="frow">
+    <div class="qr">
+      <figure><div class="box"><img src="assets/qr-demo.svg" alt=""></div>
+        <figcaption>Pruébalo ahora<span>uniserv.dvergaram.dev</span></figcaption></figure>
+      <figure><div class="box"><img src="assets/qr-video.svg" alt=""></div>
+        <figcaption>Video demo<span>youtu.be/DA2z1RQujNg</span></figcaption></figure>
+    </div>
+    <div class="fcol">
+      <h4>Equipo</h4>
+      <p>Sofía Rodríguez · Juan Esteban Triviño Nieves · Camilo José Ochoa</p>
+      <h4 class="gap">Estado del desarrollo</h4>
+      <p>MVP en producción con usuarios reales. El pago retenido está implementado como estado en
+         base de datos; la integración con la pasarela Wompi es el siguiente paso.</p>
+      <p class="sources">Fuentes · Entrevistas de descubrimiento (10) y de validación con prototipo (12),
+        agosto–noviembre de 2026. Modelo financiero: UniServ_Rentabilidad.xlsx; la comisión mínima que
+        sostiene un margen meta del 30% es 11,83%. Mercado: estimación propia a partir de matrículas de
+        pregrado en programas con práctica obligatoria. Marco legal: Ley 2113 de 2021, consultorios
+        jurídicos, y Ley 2377 de 2024, consultorios psicológicos comunitarios.</p>
+    </div>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
