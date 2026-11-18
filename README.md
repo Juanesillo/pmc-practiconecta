@@ -99,19 +99,19 @@ Crea tres docentes (Odontología, Derecho y Psicología), seis estudiantes verif
 con un servicio publicado cada uno, y dos clientes.
 
 ```bash
-# 1. En el servidor: define el código de invitación y reinicia
-#    (sin DOCENTE_CODE nadie puede registrarse como docente y el marketplace queda vacío)
-echo 'DOCENTE_CODE=un-secreto-propio' >> .env
-docker compose up -d
-
-# 2. Desde cualquier máquina
-npm run provision -- --url https://uniserv.TU-DOMINIO.dev --code un-secreto-propio --cases
+npm run provision -- --url https://uniserv.TU-DOMINIO.dev --cases
 ```
+
+> **Provisional:** mientras dure la Semana de la Innovación, `server/index.js` trae un código de
+> invitación de docentes por defecto, para no depender del `.env` del servidor. Como el
+> repositorio es público, cualquiera que lo lea puede crear una cuenta de docente y avalar
+> estudiantes o resolver disputas. Al terminar la muestra, borra ese valor por defecto y define
+> `DOCENTE_CODE` en el servidor; el script lo acepta con `--code`.
 
 | Opción | Efecto |
 |---|---|
 | `--url <base>` | Instancia destino (por defecto `http://localhost:3000`) |
-| `--code <código>` | El `DOCENTE_CODE` del servidor. Obligatorio para crear docentes. |
+| `--code <código>` | Código de invitación de docentes. Solo hace falta si el servidor define `DOCENTE_CODE`. |
 | `--password <pw>` | Contraseña de todas las cuentas (por defecto `UniServ2026*`) |
 | `--cases` | Crea además dos casos: uno cerrado y calificado, y otro en supervisión |
 | `--check` | No escribe nada: informa el estado de la instancia |

@@ -5,11 +5,13 @@
  * API pública. Las cuentas quedan como registros REALES: a diferencia de las cuentas
  * semilla, no las borra `purgeSeed` al arrancar con DEMO=0.
  *
- *   node scripts/provision-demo.js --url https://uniserv.dvergaram.dev --code <DOCENTE_CODE>
+ *   node scripts/provision-demo.js --url https://uniserv.dvergaram.dev --cases
  *
  * Opciones:
  *   --url <base>        URL de la instancia (por defecto http://localhost:3000)
- *   --code <codigo>     DOCENTE_CODE del servidor. Obligatorio para crear docentes.
+ *   --code <codigo>     Código de invitación de docentes. Por defecto usa el mismo valor
+ *                       provisional que server/index.js; solo hace falta pasarlo si el
+ *                       servidor define DOCENTE_CODE.
  *   --password <pw>     Contraseña de todas las cuentas (por defecto UniServ2026*)
  *   --cases             Además crea dos casos: uno cerrado y calificado, otro en supervisión.
  *   --check             No escribe nada: solo informa qué hay en la instancia.
@@ -30,7 +32,9 @@ const arg = (flag, fallback) => {
 const has = flag => argv.includes(flag);
 
 const BASE = (arg('--url', process.env.UNISERV_URL || 'http://localhost:3000')).replace(/\/+$/, '');
-const CODE = arg('--code', process.env.DOCENTE_CODE || '');
+// Mismo valor por defecto que server/index.js mientras el código de docente esté
+// hardcodeado (provisional, ver el comentario allí).
+const CODE = arg('--code', process.env.DOCENTE_CODE || 'uniserv-docente-2026');
 const PASSWORD = arg('--password', process.env.DEMO_PASSWORD || 'UniServ2026*');
 const WITH_CASES = has('--cases');
 const CHECK_ONLY = has('--check');
